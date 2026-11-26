@@ -3,76 +3,110 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>River Watch: flood decision support</title>
+  <meta name="theme-color" content="#0c3a3a">
+  <title>River Watch · Flood response, eight Irish towns</title>
   <meta name="description" content="River Watch recommends tonight's flood levels and crew places for eight Irish towns from live river forecasts, Met Éireann warnings and the team Sheet.">
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 <header>
   <h1>River Watch</h1>
-  <p class="sub">Tonight's flood levels and crew places for eight towns, from live data and The Flood Plan 2026/27.</p>
-  <p class="disclaimer"><strong>AI can make mistakes; a person makes the final decision.</strong> River Watch recommends; the Duty Officer decides by 16:00 and records the decision and the reason.</p>
+  <p>Decision support for the flood response team serving eight Irish towns. It recommends; the Duty Officer decides by 16:00 and records the reason.</p>
+  <p class="disclaimer"><strong>AI can make mistakes; a person makes the final decision.</strong></p>
 </header>
 
 <main>
-  <section id="rehearsal" class="banner" hidden>
-    <strong>Rehearsal values in use.</strong> A flow_override_m3s or warning_override in the team Sheet is replacing live data. Clear those cells after the rehearsal.
-  </section>
+  <aside class="side">
+    <section class="card c-settings">
+      <details id="settings" open>
+        <summary>Settings</summary>
+        <label>Provider and model</label>
+        <input type="text" value="Anthropic · claude-sonnet-5-5" readonly aria-label="Provider and model">
+        <label for="keyInput">API key (stored only in this browser)</label>
+        <input id="keyInput" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your key here (sk-ant-…)">
+        <div class="row">
+          <button id="saveKey" type="button">Save</button>
+          <button id="forgetKey" type="button" class="secondary">Forget key</button>
+        </div>
+        <div class="status" id="keyState"></div>
+        <p class="src">Your key is sent only to api.anthropic.com and is never in this site's code. Use a key with a spend limit; press "Forget key" on a shared computer.</p>
+      </details>
+    </section>
 
-  <section class="card">
-    <div class="row">
-      <h2>Tonight's plan (computed by code)</h2>
-      <button id="refreshBtn" type="button">Read live data again</button>
-    </div>
-    <p id="status" class="muted">Loading…</p>
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>Town</th><th>Level / action</th><th>Forecast peak m³/s<br><small>today + 2 days</small></th><th>P95 / P99 m³/s</th><th>Rain warning</th><th>Working</th></tr></thead>
-        <tbody id="planBody"></tbody>
-      </table>
-    </div>
-    <h3>Crews (Rule 6)</h3>
-    <ul id="crews"></ul>
-    <div id="problemsBox" hidden><h3>Data problems</h3><ul id="problems" class="flag"></ul></div>
-    <h3>Sources used</h3>
-    <ul id="sources" class="small"></ul>
-    <p class="small">Team Sheet: <a id="sheetLink" target="_blank" rel="noopener">open</a>. Change a cell, then ask again or press "Read live data again".</p>
-  </section>
+    <section class="card c-question">
+      <form id="askForm">
+        <label for="question" style="margin-top:0">Question for tonight</label>
+        <textarea id="question" placeholder="Ask a question or a follow-up… (Ctrl+Enter to send)">What is tonight's plan?</textarea>
+        <div class="row">
+          <button id="askBtn" type="submit" disabled>Send</button>
+          <button id="newChat" type="button" class="secondary">New conversation</button>
+        </div>
+      </form>
+      <div class="quick">
+        <button type="button" class="secondary" data-q="What is tonight's plan?">Duty Officer: tonight's plan</button>
+        <button type="button" class="secondary" data-q="Why is Fermoy at that level?">Duty Officer: why is Fermoy at that level?</button>
+        <button type="button" class="secondary" data-q="What if the Suir at Clonmel reaches 150 m³/s?">Duty Officer: what if the Suir at Clonmel reaches 150 m³/s?</button>
+        <button type="button" class="secondary" data-q="Which town should be first in line for a flood-defence study?">Area Manager: first town for a flood-defence study</button>
+      </div>
+      <div class="status" id="sendStatus"></div>
+      <div class="meta"><span id="usage"></span> <button id="clearUsage" type="button" class="link">reset count</button></div>
+    </section>
+  </aside>
 
-  <section class="card">
-    <h2>Ask River Watch</h2>
-    <div class="quick">
-      <button type="button" data-q="What is tonight's plan?">What is tonight's plan?</button>
-      <button type="button" data-q="Why is Fermoy at that level?">Why is Fermoy at that level?</button>
-      <button type="button" data-q="What if the Suir at Clonmel reaches 150 m³/s?">What if the Suir at Clonmel reaches 150 m³/s?</button>
-      <button type="button" data-q="Which town should be first in line for a flood-defence study?">Which town first for a flood-defence study?</button>
-    </div>
-    <div id="chat" aria-live="polite"></div>
-    <form id="askForm">
-      <input id="question" type="text" placeholder="Ask a question or a follow-up…" autocomplete="off" aria-label="Question">
-      <button id="askBtn" type="submit" disabled>Ask</button>
-    </form>
-    <p class="small"><button id="newChat" type="button" class="link">Start a new conversation</button> · <span id="usage"></span> <button id="clearUsage" type="button" class="link">reset count</button></p>
-  </section>
+  <div class="content">
+    <section id="rehearsal" class="alert bad" hidden>
+      <strong>Rehearsal values in use.</strong> A flow_override_m3s or warning_override in the team Sheet is replacing live data. Clear those cells after the rehearsal.
+    </section>
 
-  <section class="card">
-    <h2>Settings: your Anthropic API key</h2>
-    <p class="small">Your key stays in <strong>this browser only</strong> (localStorage) and is sent only to api.anthropic.com. It is never in this site's code or repository. Use a key from a workspace with a spend limit, and press "Forget key" on a shared computer.</p>
-    <div class="row">
-      <input id="keyInput" type="password" placeholder="sk-ant-…" autocomplete="off" aria-label="Anthropic API key">
-      <button id="saveKey" type="button">Save key</button>
-      <button id="forgetKey" type="button">Forget key</button>
-    </div>
-    <p id="keyState" class="small"></p>
-  </section>
+    <section class="card c-advice">
+      <h2>Advice <span class="src">(AI explanation of the rule results below)</span></h2>
+      <div id="chat" aria-live="polite"></div>
+      <div id="decision" hidden>
+        <label for="reason" style="margin-top:0">Duty Officer's decision and reason (Flood Plan Rule 1)</label>
+        <input id="reason" type="text" placeholder="e.g. Agree: Fermoy barriers, Clonmel crew. Reason: …" autocomplete="off">
+        <div class="row">
+          <button type="button" id="approve">Approve</button>
+          <button type="button" id="reject" class="secondary">Reject</button>
+        </div>
+        <div class="status" id="decisionStatus"></div>
+        <ol id="decisionLog" reversed></ol>
+      </div>
+    </section>
+
+    <section class="card c-plan">
+      <div class="row between">
+        <h2>Tonight's plan, town by town <span class="src">(computed by code from The Flood Plan)</span></h2>
+        <button id="refreshBtn" type="button" class="secondary">Read live data again</button>
+      </div>
+      <div class="status" id="status">Loading…</div>
+      <div class="tiles" id="tiles"></div>
+      <div class="scroll">
+        <table id="planTable">
+          <thead><tr><th>Town</th><th>Level / action</th><th>Forecast peak m³/s<br><span class="sub">today + 2 days</span></th><th>P95 / P99 m³/s</th><th>Rain warning</th><th>Working</th></tr></thead>
+          <tbody id="planBody"></tbody>
+        </table>
+      </div>
+      <h3>Crews (Rule 6)</h3>
+      <ul id="crews" class="plain"></ul>
+      <div id="problemsBox" hidden><h3>Data problems</h3><ul id="problems" class="plain flag"></ul></div>
+    </section>
+
+    <details class="card c-sources" id="sourcesCard" open>
+      <summary>Sources used <span class="src">(each read at the moment of the question)</span></summary>
+      <ul id="sources" class="plain"></ul>
+      <p class="src">Team Sheet: <a id="sheetLink" target="_blank" rel="noopener">open</a>. Change a cell, then ask again or press "Read live data again".</p>
+    </details>
+  </div>
 </main>
 
-<footer class="small">
-  <p>Brain: Anthropic Claude Sonnet 5.5. Code computes every level and crew place; the model explains them. Not covered: coastal and tidal flooding, road closures, insurance and individual homes: ask the council's area office.</p>
-  <p><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> (CC BY 4.0). Flood forecasts from Global Flood Awareness System GloFAS (Copernicus Emergency Management Service). Location data based on GeoNames.</p>
-  <p>Warnings: Copyright Met Éireann. Source: <a href="https://www.met.ie" target="_blank" rel="noopener">met.ie</a>. This data is published under a Creative Commons Attribution 4.0 International (CC BY 4.0). Met Éireann does not accept any liability whatsoever for any error or omission in the data. Warning text is shown unaltered; expired warnings are removed.</p>
-  <p>Contains Irish Public Sector Information licensed under a Creative Commons Attribution 4.0 International (CC BY 4.0) licence (source http://waterlevel.ie - provided by the Office of Public Works.) OPW data is provisional (<a href="https://waterlevel.ie/disclaimer/" target="_blank" rel="noopener">disclaimer</a>); used here for the Rule 8 study ranking.</p>
-  <p>Changes made: river cells chosen on each main channel; P95/P99 computed from 2016–2025 daily flow; OPW 15-minute flow averaged to daily; warnings filtered (rain, 48 h, county) but not edited. The Flood Plan is fictional (version 2026/27).</p>
+<footer>
+  <div class="card">
+    <p>Brain: Anthropic Claude Sonnet 5.5. Code computes every level and crew place; the model explains them. Not covered: coastal and tidal flooding, road closures, insurance and individual homes: ask the council's area office.</p>
+    <p><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> (CC BY 4.0). Flood forecasts from Global Flood Awareness System GloFAS (Copernicus Emergency Management Service). Location data based on GeoNames.</p>
+    <p>Warnings: Copyright Met Éireann. Source: <a href="https://www.met.ie" target="_blank" rel="noopener">met.ie</a>. This data is published under a Creative Commons Attribution 4.0 International (CC BY 4.0). Met Éireann does not accept any liability whatsoever for any error or omission in the data. Warning text is shown unaltered; expired warnings are removed.</p>
+    <p>Contains Irish Public Sector Information licensed under a Creative Commons Attribution 4.0 International (CC BY 4.0) licence (source http://waterlevel.ie - provided by the Office of Public Works.) OPW data is provisional (<a href="https://waterlevel.ie/disclaimer/" target="_blank" rel="noopener">disclaimer</a>); used here for the Rule 8 study ranking.</p>
+    <p>Changes made: river cells chosen on each main channel; P95/P99 computed from 2016–2025 daily flow; OPW 15-minute flow averaged to daily; warnings filtered (rain, 48 h, county) but not edited. The Flood Plan is fictional (version 2026/27).</p>
+  </div>
 </footer>
 <script type="module" src="src/app.js"></script>
 </body>

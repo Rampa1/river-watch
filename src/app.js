@@ -8,21 +8,24 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const fmtTime = (iso) => iso ? new Date(iso).toLocaleString("en-IE", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Dublin" }) : "-";
 const fmtDate = (d) => d ? new Date(`${d}T12:00:00`).toLocaleDateString("en-IE", { weekday: "short", day: "numeric", month: "short" }) : "-";
+const DECISIONS = "riverwatch.decisions";
 
 let live = null, plan = null, history = [];
 
 // ---------- settings box (key stays in this browser only) ----------
 function showKeyState() {
   const k = keyStore.get();
-  $("#keyState").textContent = k ? `Key saved in this browser (…${k.slice(-4)}).` : "No key saved. Paste your Anthropic API key to ask questions.";
+  $("#keyState").textContent = k ? `A key is saved in this browser (…${k.slice(-4)}).` : "No key saved yet.";
+  $("#keyInput").placeholder = k ? "Key saved in this browser (hidden)" : "Paste your key here (sk-ant-…)";
   $("#askBtn").disabled = !k;
 }
 $("#saveKey").onclick = () => {
   const v = $("#keyInput").value.trim();
+  if (!v) { showKeyState(); return; }
   if (!/^sk-ant-/.test(v)) { $("#keyState").textContent = "That does not look like an Anthropic key (it should start with sk-ant-)."; return; }
-  keyStore.save(v); $("#keyInput").value = ""; showKeyState();
+  keyStore.save(v); $("#keyInput").value = ""; showKeyState(); $("#keyState").textContent = "Saved. " + $("#keyState").textContent;
 };
-$("#forgetKey").onclick = () => { keyStore.forget(); showKeyState(); };
+$("#forgetKey").onclick = () => { keyStore.forget(); $("#keyInput").value = ""; showKeyState(); $("#keyState").textContent = "Key forgotten."; };
 
 // ---------- live data + plan ----------
 async function refresh() {
@@ -30,37 +33,44 @@ async function refresh() {
   live = await readAllLive();
   plan = buildPlan({ rows: live.rows, history: live.history, forecasts: live.forecasts, warnings: live.warnings, now: new Date(), sources: live.sources });
   render();
-  $("#status").textContent = `Live data read ${fmtTime(new Date().toISOString())}.`;
+  $("#status").textContent = `Live data read ${fmtTime(new Date().toISOString())}. Rules applied by code; the AI only explains.`;
   return plan;
 }
 
-function levelBadge(t) {
-  const lvl = t.level ?? "Unknown";
-  return `<span class="lvl lvl-${lvl.toLowerCase()}">${esc(lvl)}</span>`;
-}
+const lvlKey = (t) => (t.level ?? "Unknown").toLowerCase();
 
 function render() {
   $("#rehearsal").hidden = !plan.rehearsal;
-  const rows = plan.towns.map((t) => {
+
+  const count = (l) => plan.towns.filter((t) => t.level === l).length;
+  const crewsOut = Object.values(plan.crews).reduce((a, c) => a + c.goes_to.length, 0);
+  const warned = plan.towns.filter((t) => t.warning?.raises).length;
+  $("#tiles").innerHTML = [
+    ["t-bar", count("Barriers"), "towns at Barriers"], ["t-sby", count("Standby"), "towns at Standby"],
+    ["t-nor", count("Normal"), "towns Normal"], ["t-crw", `${crewsOut}/6`, "crew places used"],
+    ["t-wrn", warned, "towns raised by a warning"],
+  ].map(([c, v, l]) => `<div class="tile ${c}"><b>${v}</b><span>${l}</span></div>`).join("");
+
+  $("#planBody").innerHTML = plan.towns.map((t) => {
     const days = t.forecast.days?.map((d) => `${fmtDate(d.date)} ${d.value}`).join(" · ") ?? `<em>${esc(t.forecast.error)}</em>`;
     const warn = !t.warning ? "<em>source down</em>"
-      : t.warning.raises ? t.warning.raising.map((w) => `<b>${esc(w.level)}</b>${w.source === "rehearsal" ? " (rehearsal)" : ""}`).join(", ")
+      : t.warning.raises ? t.warning.raising.map((w) => `<b>${esc(w.level)}</b>${w.source === "rehearsal" ? ' <span class="tag">rehearsal</span>' : ""}`).join(", ")
       : t.warning.mentioned.length ? "yellow (no change)" : "none";
-    return `<tr>
-      <td><b>${esc(t.town)}</b><br><small>${esc(t.river)}, ${esc(t.county)}</small></td>
-      <td>${levelBadge(t)}<br><small>${esc(t.action)}${t.crew ? ` (${esc(t.crew)} crew)` : ""}</small></td>
-      <td class="num">${t.peak ?? "-"}${t.rehearsal.some((r) => r.startsWith("flow")) ? ' <span class="tag">rehearsal</span>' : ""}<br><small>${days}</small></td>
-      <td class="num">${t.p95} / ${t.p99}<br><small>${t.pctAboveP99 != null ? `${t.pctAboveP99 > 0 ? "+" : ""}${t.pctAboveP99}% vs P99` : ""}</small></td>
-      <td>${warn}<br><small>${esc(t.warning?.counties.join(" + ") ?? "")}</small></td>
-      <td><small>${t.reasons.map(esc).join("<br>")}${t.flags.length ? `<br><span class="flag">${t.flags.map(esc).join("<br>")}</span>` : ""}</small>
+    const rehearsalFlow = t.rehearsal.some((r) => r.startsWith("flow")) ? ' <span class="tag">rehearsal</span>' : "";
+    return `<tr class="r-${lvlKey(t)}">
+      <td><b>${esc(t.town)}</b><br><span class="sub">${esc(t.river)}, ${esc(t.county)}</span></td>
+      <td data-label="Level / action"><span class="lvl lvl-${lvlKey(t)}">${esc(t.level ?? "Unknown")}</span><br><span class="sub">${esc(t.action)}${t.crew ? ` (${esc(t.crew)} crew)` : ""}</span></td>
+      <td data-label="Forecast peak m³/s (today + 2 days)" class="num">${t.peak ?? "-"}${rehearsalFlow}<br><span class="sub">${days}</span></td>
+      <td data-label="P95 / P99 m³/s" class="num">${t.p95} / ${t.p99}<br><span class="sub">${t.pctAboveP99 != null ? `${t.pctAboveP99 > 0 ? "+" : ""}${t.pctAboveP99}% vs P99` : ""}</span></td>
+      <td data-label="Rain warning">${warn}<br><span class="sub">${esc(t.warning?.counties.join(" + ") ?? "")}</span></td>
+      <td data-label="Working"><span class="sub">${t.reasons.map(esc).join("<br>")}</span>${t.flags.length ? `<br><span class="flag">${t.flags.map(esc).join("<br>")}</span>` : ""}
         <br><a href="${esc(t.forecast.url)}" target="_blank" rel="noopener">forecast source ↗</a></td>
     </tr>`;
   }).join("");
-  $("#planBody").innerHTML = rows;
 
   $("#crews").innerHTML = Object.entries(plan.crews).map(([c, v]) =>
     `<li><b>${esc(c)} crew</b>: ${v.goes_to.length ? `recommended to ${v.goes_to.map(esc).join(" and ")}` : "no barrier job tonight"}
-      <small>(may work in ${v.may_work_in.map(esc).join(", ") || "nowhere tonight"}${v.constraints.length ? `; ${v.constraints.map(esc).join("; ")}` : ""})</small></li>`).join("");
+      <span class="sub">(may work in ${v.may_work_in.map(esc).join(", ") || "nowhere tonight"}${v.constraints.length ? `; ${v.constraints.map(esc).join("; ")}` : ""})</span></li>`).join("");
   $("#problems").innerHTML = plan.problems.map((p) => `<li>${esc(p)}</li>`).join("");
   $("#problemsBox").hidden = !plan.problems.length;
 
@@ -68,7 +78,7 @@ function render() {
   const src = (o, extra = "") => o.error ? `<span class="flag">${esc(o.name)}: unavailable (${esc(o.error)})</span>`
     : `${o.url ? `<a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.name)}</a>` : esc(o.name)}, read ${fmtTime(o.fetchedAt || o.builtAt)}${extra}`;
   $("#sources").innerHTML = [
-    src(s.sheet), src(s.forecast, " (daily values for local dates shown; peak = max of today and next 2 days)"),
+    src(s.sheet), src(s.forecast, " (daily values for local dates; peak = max of today and the next 2 days)"),
     src(s.warnings, s.warnings.count != null ? `, ${s.warnings.count} warning(s) in feed` : ""),
     `${esc(s.thresholds.name)}: <a href="data/history_summary.json" target="_blank">stored file</a>, built ${esc(s.thresholds.builtAt)}`,
     `${esc(s.study.name)}: <a href="data/study_ranking.json" target="_blank">stored file</a>, built ${esc(s.study.builtAt)}`,
@@ -89,51 +99,103 @@ function runWhatIf(changes) {
   return planForModel(p, { hypothetical: true, changes_applied: changes });
 }
 
-// ---------- questions ----------
-function addMsg(who, html) {
-  const d = document.createElement("div"); d.className = `msg ${who}`; d.innerHTML = html; $("#chat").append(d); d.scrollIntoView({ block: "nearest" });
-  return d;
+// ---------- answer formatting: small, safe Markdown (escaped first) ----------
+function md(text) {
+  const inline = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<i>$2</i>").replace(/`([^`]+)`/g, "<code>$1</code>");
+  const lines = text.replace(/\r/g, "").split("\n");
+  let html = "", list = null, i = 0;
+  const close = () => { if (list) { html += `</${list}>`; list = null; } };
+  while (i < lines.length) {
+    const l = lines[i];
+    if (/^\s*\|.*\|\s*$/.test(l) && i + 1 < lines.length && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1])) {
+      close();
+      const cells = (r) => r.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+      let t = `<div class="scroll"><table class="md"><thead><tr>${cells(l).map((c) => `<th>${inline(c)}</th>`).join("")}</tr></thead><tbody>`;
+      i += 2;
+      while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) { t += `<tr>${cells(lines[i]).map((c) => `<td>${inline(c)}</td>`).join("")}</tr>`; i++; }
+      html += t + "</tbody></table></div>"; continue;
+    }
+    let m;
+    if ((m = /^#{1,6}\s+(.*)$/.exec(l))) { close(); html += `<h4>${inline(m[1])}</h4>`; }
+    else if ((m = /^\s*[-*•]\s+(.*)$/.exec(l))) { if (list !== "ul") { close(); html += "<ul>"; list = "ul"; } html += `<li>${inline(m[1])}</li>`; }
+    else if ((m = /^\s*\d+[.)]\s+(.*)$/.exec(l))) { if (list !== "ol") { close(); html += "<ol>"; list = "ol"; } html += `<li>${inline(m[1])}</li>`; }
+    else if (!l.trim()) close();
+    else { close(); html += `<p>${inline(l)}</p>`; }
+    i++;
+  }
+  close();
+  return html;
 }
-function mdLite(t) {
-  return esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/^#+\s*(.+)$/gm, "<b>$1</b>").replace(/^\s*[-*]\s+/gm, "• ").replace(/\n/g, "<br>");
+
+// ---------- questions ----------
+function addMsg(cls, html) {
+  const d = document.createElement("div"); d.className = `msg ${cls}`; d.innerHTML = html; $("#chat").append(d);
+  d.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  return d;
 }
 function showUsage() {
   const log = usageLog.all();
   const total = log.reduce((a, e) => a + e.cost, 0);
   $("#usage").textContent = log.length
-    ? `${log.length} question(s) sent from this browser · last answer $${log.at(-1).cost.toFixed(4)} (${log.at(-1).input} in / ${log.at(-1).output} out tokens) · average $${(total / log.length).toFixed(4)} · total $${total.toFixed(3)}`
+    ? `${log.length} question(s) sent from this browser · last $${log.at(-1).cost.toFixed(4)} · average $${(total / log.length).toFixed(4)} per answer · total $${total.toFixed(3)}`
     : "No questions sent yet from this browser.";
 }
 
 async function onAsk(question) {
   question = question.trim(); if (!question) return;
   const key = keyStore.get();
-  if (!key) { showKeyState(); return; }
+  if (!key) { $("#sendStatus").textContent = "Save your API key in Settings first."; $("#settings").open = true; return; }
   $("#askBtn").disabled = true;
   addMsg("me", esc(question));
-  const wait = addMsg("bot", "<em>Reading live sources and asking Claude…</em>");
+  const wait = addMsg("bot", "<p><em>Reading live sources and asking Claude…</em></p>");
+  $("#sendStatus").textContent = "Fetching the team Sheet, river forecast and warnings…";
   try {
     await refresh(); // every question reads the Sheet and live sources again
+    $("#sendStatus").textContent = `Asking Anthropic (${MODEL})…`;
     const liveBlock = { ...planForModel(plan), sources: live.sources,
       study_ranking_rule8: live.study, thresholds_note: `P95/P99 from ${live.historyMeta.source}, ${live.historyMeta.period}, ${live.historyMeta.method}` };
     const r = await ask({ key, history, question, liveBlock, runWhatIf });
     history = r.messages;
     const cost = costOf(r.usage);
-    usageLog.add({ at: new Date().toISOString(), q: question.slice(0, 80), input: r.usage.input_tokens + r.usage.cache_read_input_tokens + r.usage.cache_creation_input_tokens, output: r.usage.output_tokens, calls: r.calls, cost });
-    wait.innerHTML = `${mdLite(r.text)}<div class="meta">${esc(r.model || MODEL)} · ${r.calls} call(s) · ${r.usage.output_tokens} output tokens · ≈ $${cost.toFixed(4)}${plan.rehearsal ? ' · <span class="tag">rehearsal values in use</span>' : ""}</div>`;
+    const input = r.usage.input_tokens + r.usage.cache_read_input_tokens + r.usage.cache_creation_input_tokens;
+    usageLog.add({ at: new Date().toISOString(), q: question.slice(0, 80), input, output: r.usage.output_tokens, calls: r.calls, cost });
+    wait.innerHTML = `${md(r.text)}<div class="meta">Tokens used: ${input.toLocaleString()} in + ${r.usage.output_tokens.toLocaleString()} out · cost this question US$${cost.toFixed(4)} · answered by ${esc(r.model || MODEL)} · ${fmtTime(new Date().toISOString())}${plan.rehearsal ? ' · <span class="tag">rehearsal values in use</span>' : ""} · Advice only. The Duty Officer decides.</div>`;
+    $("#decision").hidden = false;
+    $("#decisionStatus").textContent = "";
   } catch (e) {
-    wait.innerHTML = `<span class="flag">${esc(e.message)}</span>`;
+    wait.className = "msg err"; wait.textContent = `Error: ${e.message}`;
   } finally {
-    $("#askBtn").disabled = !keyStore.get(); showUsage();
+    $("#askBtn").disabled = !keyStore.get(); $("#sendStatus").textContent = ""; showUsage();
   }
 }
 
+// ---------- decision record (Flood Plan Rule 1), kept in this browser ----------
+function showDecisions() {
+  const all = JSON.parse(localStorage.getItem(DECISIONS) || "[]");
+  $("#decisionLog").innerHTML = all.slice(-5).reverse().map((d) =>
+    `<li><b>${esc(d.decision)}</b> · ${fmtTime(d.at)}${d.rehearsal ? ' · <span class="tag">rehearsal</span>' : ""}<br><span class="sub">${esc(d.reason || "(no reason given)")}</span></li>`).join("");
+}
+function record(decision) {
+  const reason = $("#reason").value.trim();
+  if (!reason) { $("#decisionStatus").textContent = "Please add the reason (Flood Plan Rule 1)."; return; }
+  const all = JSON.parse(localStorage.getItem(DECISIONS) || "[]");
+  all.push({ at: new Date().toISOString(), decision, reason, rehearsal: plan?.rehearsal,
+             levels: plan?.towns.map((t) => `${t.town}: ${t.level}`).join("; ") });
+  localStorage.setItem(DECISIONS, JSON.stringify(all));
+  $("#reason").value = ""; $("#decisionStatus").textContent = `${decision} recorded in this browser. The Duty Officer's decision stands.`;
+  showDecisions();
+}
+$("#approve").onclick = () => record("Approved");
+$("#reject").onclick = () => record("Rejected");
+
+// ---------- wiring ----------
 $("#askForm").onsubmit = (e) => { e.preventDefault(); const q = $("#question").value; $("#question").value = ""; onAsk(q); };
+$("#question").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $("#askForm").requestSubmit(); } });
 document.querySelectorAll("[data-q]").forEach((b) => (b.onclick = () => onAsk(b.dataset.q)));
 $("#refreshBtn").onclick = () => refresh().catch((e) => ($("#status").textContent = e.message));
-$("#newChat").onclick = () => { history = []; $("#chat").innerHTML = ""; };
+$("#newChat").onclick = () => { history = []; $("#chat").innerHTML = ""; $("#decision").hidden = true; };
 $("#clearUsage").onclick = () => { usageLog.clear(); showUsage(); };
 $("#sheetLink").href = sheetViewUrl;
 
-showKeyState(); showUsage();
+showKeyState(); showUsage(); showDecisions();
 refresh().catch((e) => ($("#status").innerHTML = `<span class="flag">${esc(e.message)}</span>`));
