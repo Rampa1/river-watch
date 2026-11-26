@@ -69,8 +69,8 @@ $2 per million input tokens, $10 per million output tokens; cache reads $0.10 pe
 **Other providers (added 2026-11-26):** Settings also offers OpenAI, Google Gemini and Groq, each with a model dropdown ("Load models" reads the provider's own list). All four APIs allow browser calls (checked 2026-11-26). Each provider gets the same prompt and the same what-if tool in its own format. The documented choice, prices and costs in this section remain Claude Sonnet 5.5. For other providers the user enters prices from that provider's page.
 
 **Where the key lives:** we use the settings-box route (decision 2026-11-26).
-- River Watch is a static GitHub Pages site with no server. The person using it pastes their own Anthropic key into a **settings box** with three actions: paste, save, forget key.
-- The key is kept **only in that person's browser** (`localStorage`). It is sent only to `https://api.anthropic.com`, in the `x-api-key` header, with Anthropic's `anthropic-dangerous-direct-browser-access: true` header for direct browser calls.
+- River Watch is a static GitHub Pages site with no server. The person using it opens **Settings** (collapsed by default), chooses the provider (default Anthropic) and model, and pastes their own key. There are three actions: paste, save, forget key. Each provider has its own key slot.
+- The key is kept **only in that person's browser** (`localStorage`). It is sent only to the chosen provider's API. For the default, that is `https://api.anthropic.com`, in the `x-api-key` header, with Anthropic's `anthropic-dangerous-direct-browser-access: true` header for direct browser calls. The page never displays the key, not even its last characters.
 - The key is **never** in the repository, the page source, the Google Sheet or any file. "Forget key" deletes it from the browser.
 - Checked 2026-11-26: Open-Meteo, Met Éireann, the Google Sheet CSV export and the Anthropic API all allow cross-site browser requests, so no server is needed. OPW live levels do not, so that optional extra is left out.
 
@@ -80,6 +80,7 @@ $2 per million input tokens, $10 per million output tokens; cache reads $0.10 pe
 3. **Per-request ceiling:** `max_tokens: 4000` is set in the page code, so one answer costs at most ≈ $0.05.
 4. **Exposure is limited to the browser** where the key was pasted. Do not paste it on a shared computer, or press "Forget key" afterwards.
 5. If the key leaks: delete it in the Console and create a new one. Nothing in the site needs to change, because the site never contained it.
+6. Another provider's key needs the same protection: a project or budget limit set in that provider's console before use.
 
 ## 2. River flow forecast + history (Open-Meteo Flood API, GloFAS, 0.05° grid)
 Forecast: `https://flood-api.open-meteo.com/v1/flood?latitude=..&longitude=..&daily=river_discharge&forecast_days=7&cell_selection=nearest`

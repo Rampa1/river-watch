@@ -53,7 +53,7 @@
   <text x="540" y="146" class="t">(runs in the user's browser)</text>
 
   <rect x="338" y="160" width="444" height="44" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
-  <text x="352" y="180" class="lab" fill="#92400e">Settings box: user pastes / saves / forgets own key</text><text x="352" y="197" class="t" fill="#92400e">Stored in this browser only (localStorage); never in repo or page source</text>
+  <text x="352" y="180" class="lab" fill="#92400e">Settings: choose provider + model; paste / save / forget own key</text><text x="352" y="197" class="t" fill="#92400e">Stored in this browser only (localStorage); never in repo or page source</text>
 
   <rect x="338" y="220" width="444" height="170" rx="8" class="box"/>
   <text x="352" y="246" class="h">1. Flood Plan rules in code</text>
@@ -106,8 +106,8 @@
   <!-- anthropic -->
   <rect x="870" y="440" width="380" height="150" rx="12" class="box" stroke="#7c3aed"/>
   <text x="888" y="468" class="h" fill="#6d28d9">The brain: Anthropic Claude API</text>
-  <text x="888" y="494" class="s">claude-sonnet-5-5, effort low/medium</text>
-  <text x="888" y="514" class="s">≈ $0.02 per answer, ≈ $3–4 per month</text>
+  <text x="888" y="494" class="s">claude-sonnet-5-5 (default), effort medium</text>
+  <text x="888" y="514" class="s">≈ $0.02 per answer · OpenAI/Gemini/Groq selectable</text>
   <text x="888" y="540" class="t">Key from a dedicated workspace; spend limits:</text>
   <text x="888" y="557" class="t">workspace and organisation (e.g. $10/month)</text>
   <text x="888" y="574" class="t">→ a leaked key cannot spend more than funded</text>
