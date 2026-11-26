@@ -56,7 +56,7 @@ function showResults(on) {
 }
 function showKeyState() {
   const p = $("#provider").value, k = settings.key(p);
-  $("#keyState").textContent = k ? `A ${PROVIDERS[p].label} key is saved in this browser (…${k.slice(-4)}).` : `No ${PROVIDERS[p].label} key saved yet.`;
+  $("#keyState").textContent = "";
   $("#keyInput").placeholder = k ? "Key saved in this browser (hidden)" : `Paste your key here (${PROVIDERS[p].keyHint}…)`;
   $("#askBtn").disabled = !k || !currentModel();
 }
@@ -97,11 +97,11 @@ $("#saveKey").onclick = () => {
   if (v) {
     settings.saveKey(p, v); $("#keyInput").value = "";
     showKeyState();
-    if (!v.startsWith(PROVIDERS[p].keyHint)) $("#keyState").textContent += ` Note: ${PROVIDERS[p].label} keys usually start with "${PROVIDERS[p].keyHint}".`;
-    else $("#keyState").textContent = "Saved. " + $("#keyState").textContent;
-  } else { showKeyState(); $("#keyState").textContent = "Settings saved. " + $("#keyState").textContent; }
+    $("#keyState").textContent = v.startsWith(PROVIDERS[p].keyHint) ? "Saved."
+      : `Saved. Note: ${PROVIDERS[p].label} keys usually start with "${PROVIDERS[p].keyHint}".`;
+  } else { showKeyState(); $("#keyState").textContent = "Settings saved."; }
 };
-$("#forgetKey").onclick = () => { settings.forgetKey($("#provider").value); $("#keyInput").value = ""; showKeyState(); $("#keyState").textContent = "Key forgotten for this provider."; };
+$("#forgetKey").onclick = () => { settings.forgetKey($("#provider").value); $("#keyInput").value = ""; showKeyState(); $("#keyState").textContent = "Key forgotten."; };
 
 // ---------- live data + plan ----------
 async function refresh() {

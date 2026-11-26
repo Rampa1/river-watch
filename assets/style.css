@@ -146,6 +146,7 @@ footer p { margin:4px 0; }
 }
 
 /* follow-up tick box */
-label.check { display:flex; align-items:center; gap:8px; color:var(--ink); margin:10px 0 0; font-size:.88rem; cursor:pointer; }
-label.check input { width:auto; margin:0; accent-color:var(--teal); }
+label.check { display:block; color:var(--ink); margin:10px 0 0; font-size:.88rem; cursor:pointer; line-height:1.4; }
+label.check input { width:auto; margin:0 6px 0 0; vertical-align:-2px; accent-color:var(--teal); }
+label.check .src { display:block; margin-left:22px; }
 label.check:has(input:disabled) { opacity:.55; cursor:default; }

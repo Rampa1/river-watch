@@ -18,8 +18,8 @@
 <main>
   <aside class="side">
     <section class="card c-settings">
-      <details id="settings" open>
-        <summary>Settings</summary>
+      <details id="settings">
+        <summary>Settings <span class="src">(AI provider, model and API key)</span></summary>
         <label for="provider">Provider (AI API)</label>
         <select id="provider"></select>
         <label for="model">Model</label>
@@ -37,7 +37,6 @@
           <button id="forgetKey" type="button" class="secondary">Forget key</button>
         </div>
         <div class="status" id="keyState"></div>
-        <p class="src">Your key is sent only to the provider you choose and is never in this site's code. Use a key with a spend limit; press "Forget key" on a shared computer. Recommended: Anthropic · claude-sonnet-5-5.</p>
       </details>
     </section>
 
