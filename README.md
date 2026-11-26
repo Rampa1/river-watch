@@ -10,7 +10,8 @@ Decision support for a flood response team serving eight Irish towns. Each after
   - the Open-Meteo Flood API (GloFAS) forecast;
   - Met Éireann weather warnings.
 - **Code computes, the brain explains.** `src/plan.js` applies every Flood Plan rule: levels, warnings, rehearsal values, crews and barrier sets. Anthropic Claude Sonnet 5.5 explains the result, and can re-run the engine for "what if" questions.
-- **The key** is pasted by each user into the settings box. It is stored only in their browser (`localStorage`), sent only to `api.anthropic.com`, and never stored in this repository.
+- **Choice of AI:** Settings has a provider dropdown (Anthropic, OpenAI, Google Gemini, Groq) and a model dropdown. "Load models" fetches the provider's own list, and "Other…" takes any model name. The recommended and default choice is Anthropic `claude-sonnet-5-5`.
+- **The key** is pasted by each user into the settings box, with one key per provider. It is stored only in their browser (`localStorage`), sent only to the chosen provider, and never stored in this repository.
 - **Stored once, offline** (`data/`):
   - P95/P99 thresholds from 2016–2025 GloFAS daily flow;
   - the Rule 8 study ranking from OPW gauged flow.
@@ -20,7 +21,7 @@ Decision support for a flood response team serving eight Irish towns. Each after
 ## Run and test locally
 ```
 python -m http.server 8000     # then open http://localhost:8000
-npm test                       # 25 tests: Flood Plan engine, warning filter, API client (simulated)
+npm test                       # 29 tests: Flood Plan engine, warning filter, each provider's API format (simulated)
 ```
 
 ## Sources and licences

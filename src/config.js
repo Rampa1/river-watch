@@ -23,11 +23,8 @@ export const CREWS = {
 };
 export const TOWNS_PER_CREW = 2;
 
-export const MODEL = "claude-sonnet-5-5";
 export const ANTHROPIC_VERSION = "2026-10-21";
 export const MAX_TOKENS = 4000;
 export const EFFORT = "medium";
-// USD per million tokens, from https://platform.claude.com/docs/en/about-claude/pricing (checked 2026-11-26)
-export const PRICE = { input: 2, output: 10, cacheWrite5m: 2.5, cacheRead: 0.1 };
 
 export const DISCLAIMER = "AI can make mistakes; a person makes the final decision.";

@@ -1,8 +1,9 @@
 // River Watch page: wires the settings box, live sources, engine, brain and display together.
 import { buildPlan } from "./plan.js";
 import { readAllLive } from "./sources.js";
-import { ask, keyStore, usageLog, costOf, planForModel } from "./brain.js";
-import { sheetViewUrl, MODEL } from "./config.js";
+import { ask, settings, usageLog, costOf, planForModel } from "./brain.js";
+import { PROVIDERS } from "./providers.js";
+import { sheetViewUrl } from "./config.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -12,20 +13,88 @@ const DECISIONS = "riverwatch.decisions";
 
 let live = null, plan = null, history = [];
 
-// ---------- settings box (key stays in this browser only) ----------
-function showKeyState() {
-  const k = keyStore.get();
-  $("#keyState").textContent = k ? `A key is saved in this browser (…${k.slice(-4)}).` : "No key saved yet.";
-  $("#keyInput").placeholder = k ? "Key saved in this browser (hidden)" : "Paste your key here (sk-ant-…)";
-  $("#askBtn").disabled = !k;
+// ---------- settings box: provider, model, prices, and a key per provider (this browser only) ----------
+const MODELS_STORE = (p) => `riverwatch.models.${p}`;
+const OTHER = "__other";
+
+function modelChoices(p) {
+  const loaded = JSON.parse(localStorage.getItem(MODELS_STORE(p)) || "[]");
+  return [...new Set([...PROVIDERS[p].defaults, ...loaded])];
 }
-$("#saveKey").onclick = () => {
-  const v = $("#keyInput").value.trim();
-  if (!v) { showKeyState(); return; }
-  if (!/^sk-ant-/.test(v)) { $("#keyState").textContent = "That does not look like an Anthropic key (it should start with sk-ant-)."; return; }
-  keyStore.save(v); $("#keyInput").value = ""; showKeyState(); $("#keyState").textContent = "Saved. " + $("#keyState").textContent;
+function fillProviders() {
+  $("#provider").innerHTML = Object.entries(PROVIDERS).map(([id, P]) => `<option value="${id}">${esc(P.label)}</option>`).join("");
+}
+function fillModels(p, selected) {
+  const list = modelChoices(p);
+  const custom = selected && !list.includes(selected);
+  $("#model").innerHTML = list.map((m) => `<option value="${esc(m)}">${esc(m)}${m === PROVIDERS[p].defaults[0] ? " (default)" : ""}</option>`).join("")
+    + `<option value="${OTHER}">Other… (type a model name)</option>`;
+  $("#model").value = custom ? OTHER : (selected || list[0]);
+  $("#modelOther").hidden = !custom;
+  $("#modelOther").value = custom ? selected : "";
+}
+const currentModel = () => ($("#model").value === OTHER ? $("#modelOther").value.trim() : $("#model").value);
+function fillPrices(p, m, keepTyped = false) {
+  const known = PROVIDERS[p].prices[m];
+  if (known) { $("#priceIn").value = known[0]; $("#priceOut").value = known[1]; }
+  else if (!keepTyped) { $("#priceIn").value = ""; $("#priceOut").value = ""; }
+}
+function persist() {
+  const num = (v) => (v === "" ? null : Number(v));
+  settings.save({ provider: $("#provider").value, model: currentModel(), priceIn: num($("#priceIn").value), priceOut: num($("#priceOut").value) });
+}
+function resetConversation(note) {
+  history = []; $("#chat").innerHTML = ""; $("#decision").hidden = true;
+  if (note) addMsg("bot", `<p class="sub">${esc(note)}</p>`);
+}
+function showKeyState() {
+  const p = $("#provider").value, k = settings.key(p);
+  $("#keyState").textContent = k ? `A ${PROVIDERS[p].label} key is saved in this browser (…${k.slice(-4)}).` : `No ${PROVIDERS[p].label} key saved yet.`;
+  $("#keyInput").placeholder = k ? "Key saved in this browser (hidden)" : `Paste your key here (${PROVIDERS[p].keyHint}…)`;
+  $("#askBtn").disabled = !k || !currentModel();
+}
+function loadSettings() {
+  const s = settings.get();
+  $("#provider").value = s.provider;
+  fillModels(s.provider, s.model);
+  $("#priceIn").value = s.priceIn ?? ""; $("#priceOut").value = s.priceOut ?? "";
+  showKeyState();
+}
+$("#provider").onchange = () => {
+  const p = $("#provider").value;
+  fillModels(p, PROVIDERS[p].defaults[0]); fillPrices(p, currentModel()); persist(); showKeyState();
+  resetConversation(`Switched to ${PROVIDERS[p].label} · ${currentModel()}. New conversation started.`);
 };
-$("#forgetKey").onclick = () => { keyStore.forget(); $("#keyInput").value = ""; showKeyState(); $("#keyState").textContent = "Key forgotten."; };
+$("#model").onchange = () => {
+  $("#modelOther").hidden = $("#model").value !== OTHER;
+  if ($("#model").value === OTHER) $("#modelOther").focus();
+  fillPrices($("#provider").value, currentModel()); persist(); showKeyState();
+  resetConversation(`Model set to ${currentModel() || "(type a name)"}. New conversation started.`);
+};
+$("#modelOther").onchange = () => { fillPrices($("#provider").value, currentModel(), true); persist(); showKeyState(); };
+$("#priceIn").onchange = $("#priceOut").onchange = persist;
+$("#loadModels").onclick = async () => {
+  const p = $("#provider").value, key = $("#keyInput").value.trim() || settings.key(p);
+  if (!key) { $("#keyState").textContent = "Paste or save a key for this provider first."; return; }
+  $("#keyState").textContent = `Loading models from ${PROVIDERS[p].label}…`;
+  try {
+    const list = await PROVIDERS[p].listModels(key);
+    localStorage.setItem(MODELS_STORE(p), JSON.stringify(list));
+    fillModels(p, currentModel());
+    $("#keyState").textContent = `${list.length} model(s) loaded from ${PROVIDERS[p].label}.`;
+  } catch (e) { $("#keyState").textContent = e.message; }
+};
+$("#saveKey").onclick = () => {
+  const p = $("#provider").value, v = $("#keyInput").value.trim();
+  persist();
+  if (v) {
+    settings.saveKey(p, v); $("#keyInput").value = "";
+    showKeyState();
+    if (!v.startsWith(PROVIDERS[p].keyHint)) $("#keyState").textContent += ` Note: ${PROVIDERS[p].label} keys usually start with "${PROVIDERS[p].keyHint}".`;
+    else $("#keyState").textContent = "Saved. " + $("#keyState").textContent;
+  } else { showKeyState(); $("#keyState").textContent = "Settings saved. " + $("#keyState").textContent; }
+};
+$("#forgetKey").onclick = () => { settings.forgetKey($("#provider").value); $("#keyInput").value = ""; showKeyState(); $("#keyState").textContent = "Key forgotten for this provider."; };
 
 // ---------- live data + plan ----------
 async function refresh() {
@@ -135,37 +204,41 @@ function addMsg(cls, html) {
 }
 function showUsage() {
   const log = usageLog.all();
-  const total = log.reduce((a, e) => a + e.cost, 0);
-  $("#usage").textContent = log.length
-    ? `${log.length} question(s) sent from this browser · last $${log.at(-1).cost.toFixed(4)} · average $${(total / log.length).toFixed(4)} per answer · total $${total.toFixed(3)}`
-    : "No questions sent yet from this browser.";
+  const priced = log.filter((e) => typeof e.cost === "number");
+  const total = priced.reduce((a, e) => a + e.cost, 0);
+  $("#usage").textContent = !log.length ? "No questions sent yet from this browser."
+    : `${log.length} question(s) sent from this browser` + (priced.length
+      ? ` · last $${priced.at(-1).cost.toFixed(4)} · average $${(total / priced.length).toFixed(4)} per answer · total $${total.toFixed(3)}` : " · set prices in Settings to see cost");
 }
 
 async function onAsk(question) {
   question = question.trim(); if (!question) return;
-  const key = keyStore.get();
-  if (!key) { $("#sendStatus").textContent = "Save your API key in Settings first."; $("#settings").open = true; return; }
+  const s = settings.get(), P = PROVIDERS[s.provider], key = settings.key(s.provider), model = currentModel();
+  if (!key) { $("#sendStatus").textContent = `Save your ${P.label} API key in Settings first.`; $("#settings").open = true; return; }
+  if (!model) { $("#sendStatus").textContent = "Choose or type a model in Settings first."; $("#settings").open = true; return; }
   $("#askBtn").disabled = true;
   addMsg("me", esc(question));
-  const wait = addMsg("bot", "<p><em>Reading live sources and asking Claude…</em></p>");
+  const wait = addMsg("bot", "<p><em>Reading live sources and asking the AI…</em></p>");
   $("#sendStatus").textContent = "Fetching the team Sheet, river forecast and warnings…";
   try {
     await refresh(); // every question reads the Sheet and live sources again
-    $("#sendStatus").textContent = `Asking Anthropic (${MODEL})…`;
+    $("#sendStatus").textContent = `Asking ${P.label} (${model})…`;
     const liveBlock = { ...planForModel(plan), sources: live.sources,
       study_ranking_rule8: live.study, thresholds_note: `P95/P99 from ${live.historyMeta.source}, ${live.historyMeta.period}, ${live.historyMeta.method}` };
-    const r = await ask({ key, history, question, liveBlock, runWhatIf });
+    const r = await ask({ provider: s.provider, model, key, history, question, liveBlock, runWhatIf });
     history = r.messages;
-    const cost = costOf(r.usage);
-    const input = r.usage.input_tokens + r.usage.cache_read_input_tokens + r.usage.cache_creation_input_tokens;
-    usageLog.add({ at: new Date().toISOString(), q: question.slice(0, 80), input, output: r.usage.output_tokens, calls: r.calls, cost });
-    wait.innerHTML = `${md(r.text)}<div class="meta">Tokens used: ${input.toLocaleString()} in + ${r.usage.output_tokens.toLocaleString()} out · cost this question US$${cost.toFixed(4)} · answered by ${esc(r.model || MODEL)} · ${fmtTime(new Date().toISOString())}${plan.rehearsal ? ' · <span class="tag">rehearsal values in use</span>' : ""} · Advice only. The Duty Officer decides.</div>`;
+    const input = r.usage.input + r.usage.cacheRead + r.usage.cacheWrite;
+    const cost = costOf(r.usage, s.priceIn, s.priceOut, model);
+    usageLog.add({ at: new Date().toISOString(), provider: s.provider, model, q: question.slice(0, 80), input, output: r.usage.output, calls: r.calls, cost });
+    const costTxt = cost == null ? "cost not shown (set prices in Settings)"
+      : `cost this question US$${cost.toFixed(4)} (${input.toLocaleString()} × $${s.priceIn}/M + ${r.usage.output.toLocaleString()} × $${s.priceOut}/M${r.usage.cacheRead ? ", cache reads discounted" : ""})`;
+    wait.innerHTML = `${md(r.text)}<div class="meta">Tokens used: ${input.toLocaleString()} in + ${r.usage.output.toLocaleString()} out · ${costTxt} · answered by ${esc(P.label)} · ${esc(r.model || model)} · ${fmtTime(new Date().toISOString())}${plan.rehearsal ? ' · <span class="tag">rehearsal values in use</span>' : ""} · Advice only. The Duty Officer decides.</div>`;
     $("#decision").hidden = false;
     $("#decisionStatus").textContent = "";
   } catch (e) {
     wait.className = "msg err"; wait.textContent = `Error: ${e.message}`;
   } finally {
-    $("#askBtn").disabled = !keyStore.get(); $("#sendStatus").textContent = ""; showUsage();
+    showKeyState(); $("#sendStatus").textContent = ""; showUsage();
   }
 }
 
@@ -193,9 +266,9 @@ $("#askForm").onsubmit = (e) => { e.preventDefault(); const q = $("#question").v
 $("#question").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $("#askForm").requestSubmit(); } });
 document.querySelectorAll("[data-q]").forEach((b) => (b.onclick = () => onAsk(b.dataset.q)));
 $("#refreshBtn").onclick = () => refresh().catch((e) => ($("#status").textContent = e.message));
-$("#newChat").onclick = () => { history = []; $("#chat").innerHTML = ""; $("#decision").hidden = true; };
+$("#newChat").onclick = () => resetConversation();
 $("#clearUsage").onclick = () => { usageLog.clear(); showUsage(); };
 $("#sheetLink").href = sheetViewUrl;
 
-showKeyState(); showUsage(); showDecisions();
+fillProviders(); loadSettings(); showUsage(); showDecisions();
 refresh().catch((e) => ($("#status").innerHTML = `<span class="flag">${esc(e.message)}</span>`));

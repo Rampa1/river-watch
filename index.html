@@ -20,16 +20,24 @@
     <section class="card c-settings">
       <details id="settings" open>
         <summary>Settings</summary>
-        <label>Provider and model</label>
-        <input type="text" value="Anthropic · claude-sonnet-5-5" readonly aria-label="Provider and model">
+        <label for="provider">Provider (AI API)</label>
+        <select id="provider"></select>
+        <label for="model">Model</label>
+        <select id="model"></select>
+        <input id="modelOther" type="text" autocomplete="off" spellcheck="false" placeholder="Type the exact model name" hidden>
+        <div class="row" style="margin-top:6px"><button id="loadModels" type="button" class="link">Load the model list from this provider (needs your key)</button></div>
         <label for="keyInput">API key (stored only in this browser)</label>
-        <input id="keyInput" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your key here (sk-ant-…)">
+        <input id="keyInput" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your key here">
+        <label for="priceIn">Price per million INPUT tokens (US$) <span class="src">(Claude prices prefilled; check your provider's page for others)</span></label>
+        <input id="priceIn" type="number" step="any" min="0" placeholder="e.g. 2">
+        <label for="priceOut">Price per million OUTPUT tokens (US$)</label>
+        <input id="priceOut" type="number" step="any" min="0" placeholder="e.g. 10">
         <div class="row">
           <button id="saveKey" type="button">Save</button>
           <button id="forgetKey" type="button" class="secondary">Forget key</button>
         </div>
         <div class="status" id="keyState"></div>
-        <p class="src">Your key is sent only to api.anthropic.com and is never in this site's code. Use a key with a spend limit; press "Forget key" on a shared computer.</p>
+        <p class="src">Your key is sent only to the provider you choose and is never in this site's code. Use a key with a spend limit; press "Forget key" on a shared computer. Recommended: Anthropic · claude-sonnet-5-5.</p>
       </details>
     </section>
 

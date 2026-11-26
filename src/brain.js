@@ -1,19 +1,30 @@
-// River Watch: the brain. The page calls the Anthropic Messages API directly from the browser
-// with the user's own key (settings box). Plain fetch, no third-party script: nothing else that runs on
-// this page can read the key. Code computes, the brain explains: the model gets the computed plan, never
-// raw history, and may only re-run our engine through the what_if tool.
+// River Watch: the brain. The page calls the chosen AI provider directly from the browser with the
+// user's own key (settings box). Plain fetch, no third-party script: nothing else that runs on this page
+// can read the key. Code computes, the brain explains: the model gets the computed plan, never raw
+// history, and may only re-run our engine through the what_if tool. Provider formats are in providers.js.
 
-import { MODEL, ANTHROPIC_VERSION, MAX_TOKENS, EFFORT, PRICE, DISCLAIMER } from "./config.js";
+import { DISCLAIMER } from "./config.js";
+import { PROVIDERS, DEFAULT_PROVIDER } from "./providers.js";
 
-const KEY_STORE = "riverwatch.anthropicKey";
 // Shown when the model declines a question (no retry on another model): treated as out of scope.
 export const OUT_OF_SCOPE = "That question is outside what River Watch can answer. River Watch covers tonight's flood levels and crew places for the eight towns under The Flood Plan, and the flood-defence study ranking. Questions about coastal or tidal flooding, road closures, insurance or an individual home go to the council's area office.";
 const USAGE_STORE = "riverwatch.usageLog";
+const SETTINGS_STORE = "riverwatch.settings";
+const keyName = (p) => `riverwatch.key.${p}`;
 
-export const keyStore = {
-  get: () => localStorage.getItem(KEY_STORE) || "",
-  save: (k) => localStorage.setItem(KEY_STORE, k.trim()),
-  forget: () => localStorage.removeItem(KEY_STORE),
+/** Settings kept in this browser only: provider, model, prices, and one key per provider. */
+export const settings = {
+  get() {
+    const s = JSON.parse(localStorage.getItem(SETTINGS_STORE) || "{}");
+    const provider = PROVIDERS[s.provider] ? s.provider : DEFAULT_PROVIDER;
+    const model = s.model || PROVIDERS[provider].defaults[0];
+    const known = PROVIDERS[provider].prices[model];
+    return { provider, model, priceIn: s.priceIn ?? known?.[0] ?? null, priceOut: s.priceOut ?? known?.[1] ?? null };
+  },
+  save(v) { localStorage.setItem(SETTINGS_STORE, JSON.stringify(v)); },
+  key: (p) => localStorage.getItem(keyName(p)) || (p === "anthropic" ? localStorage.getItem("riverwatch.anthropicKey") || "" : ""),
+  saveKey: (p, k) => localStorage.setItem(keyName(p), k.trim()),
+  forgetKey: (p) => { localStorage.removeItem(keyName(p)); if (p === "anthropic") localStorage.removeItem("riverwatch.anthropicKey"); },
 };
 
 export const usageLog = {
@@ -22,9 +33,13 @@ export const usageLog = {
   clear: () => localStorage.removeItem(USAGE_STORE),
 };
 
-export function costOf(u) {
-  return ((u.input_tokens || 0) * PRICE.input + (u.output_tokens || 0) * PRICE.output
-    + (u.cache_creation_input_tokens || 0) * PRICE.cacheWrite5m + (u.cache_read_input_tokens || 0) * PRICE.cacheRead) / 1e6;
+/** Cost in USD from token usage and the per-million prices in Settings (null if no price is set).
+ *  Anthropic cache writes cost 1.25x input and cache reads 0.05x input on Sonnet/Opus 5.5 (0.1x on Haiku). */
+export function costOf(u, priceIn, priceOut, model = "") {
+  if (priceIn == null || priceOut == null || priceIn === "" || priceOut === "") return null;
+  const readMult = /haiku/.test(model) ? 0.1 : 0.05;
+  return ((u.input || 0) * priceIn + (u.output || 0) * priceOut
+    + (u.cacheWrite || 0) * priceIn * 1.25 + (u.cacheRead || 0) * priceIn * readMult) / 1e6;
 }
 
 export const SYSTEM_PROMPT = `You are River Watch, a decision-support assistant for a flood response team that serves eight Irish towns.
@@ -51,34 +66,6 @@ HOW TO ANSWER
 - Out of scope (Rule 9) or not answerable from the data: say so in one or two sentences and refer to the council's area office where Rule 9 applies. Do not guess.
 - Be brief and plain. For "tonight's plan": one line per town (level, action, main reason), then where each crew is recommended to go, then any flags and rehearsal values. End plan answers with: "${DISCLAIMER}"`;
 
-const WHAT_IF_TOOL = {
-  name: "what_if",
-  description: "Re-run the River Watch Flood Plan engine on a hypothetical change, using today's live data for everything else. Use for any 'what if' question. Returns the recomputed plan (levels, crew places, flags) for all towns.",
-  strict: true,
-  input_schema: {
-    type: "object",
-    additionalProperties: false,
-    properties: {
-      changes: {
-        type: "array",
-        description: "One entry per town to change.",
-        items: {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            town: { type: "string", enum: ["Clonmel", "Fermoy", "Mallow", "Bandon", "Enniscorthy", "Ennis", "Athlone", "Carrick-on-Shannon"] },
-            flow_m3s: { type: ["number", "null"], description: "Hypothetical forecast peak in m³/s, or null for no change." },
-            warning: { type: "string", enum: ["orange", "red", "unchanged"], description: "Hypothetical orange/red rain warning for the town, or 'unchanged' to keep today's live warnings." },
-            barrier_sets: { type: ["integer", "null"], description: "Hypothetical barrier sets, or null for no change." },
-          },
-          required: ["town", "flow_m3s", "warning", "barrier_sets"],
-        },
-      },
-    },
-    required: ["changes"],
-  },
-};
-
 /** Compact, model-facing view of the plan: every number with its source and date. */
 export function planForModel(plan, extra = {}) {
   return {
@@ -102,66 +89,37 @@ export function planForModel(plan, extra = {}) {
   };
 }
 
-async function callApi(key, body) {
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": key,
-      "anthropic-version": ANTHROPIC_VERSION,
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
-    body: JSON.stringify(body),
-  });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) {
-    const msg = data?.error?.message || `HTTP ${r.status}`;
-    if (r.status === 401) throw new Error("The API key was rejected (401). Check it in the settings box.");
-    if (r.status === 429) throw new Error(`Rate or spend limit reached (429): ${msg}`);
-    if (r.status === 400 && /usage limits/i.test(msg)) throw new Error(`Spend limit reached: ${msg}`);
-    throw new Error(`Anthropic API error ${r.status}: ${msg}`);
-  }
-  return data;
-}
-
 /**
- * Ask one question. `history` is the running conversation (kept in page memory, sent back unchanged so
- * thinking blocks stay valid). `runWhatIf(changes)` is supplied by the app and re-runs the engine.
+ * Ask one question. `history` is the running conversation in the provider's own format (sent back
+ * unchanged). `runWhatIf(changes)` is supplied by the app and re-runs the engine.
  */
-export async function ask({ key, history, question, liveBlock, runWhatIf }) {
-  const messages = [...history, { role: "user", content: `LIVE DATA (read at ${new Date().toISOString()}):\n${JSON.stringify(liveBlock)}\n\nQUESTION: ${question}` }];
-  const usage = { input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 };
-  let calls = 0;
+export async function ask({ provider = DEFAULT_PROVIDER, model, key, history, question, liveBlock, runWhatIf }) {
+  const P = PROVIDERS[provider];
+  if (!P) throw new Error(`Unknown provider ${provider}`);
+  model = model || P.defaults[0];
+  const messages = [...history, P.userMessage(`LIVE DATA (read at ${new Date().toISOString()}):\n${JSON.stringify(liveBlock)}\n\nQUESTION: ${question}`)];
+  const usage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+  let calls = 0, used = model;
   for (let i = 0; i < 4; i++) {
-    const res = await callApi(key, {
-      model: MODEL, max_tokens: MAX_TOKENS,
-      system: SYSTEM_PROMPT,
-      cache_control: { type: "ephemeral" },
-      output_config: { effort: EFFORT },
-      tools: [WHAT_IF_TOOL],
-      messages,
-    });
-    calls++;
-    for (const k of Object.keys(usage)) usage[k] += res.usage?.[k] || 0;
-    messages.push({ role: "assistant", content: res.content });
-    if (res.stop_reason === "refusal") {
-      return { text: OUT_OF_SCOPE, messages, usage, calls, model: res.model };
+    const res = await P.call({ key, model, system: SYSTEM_PROMPT, messages });
+    calls++; used = res.model || used;
+    for (const k of Object.keys(usage)) usage[k] += res.usage[k] || 0;
+    messages.push(res.assistant);
+    if (res.stop === "refusal") return { text: OUT_OF_SCOPE, messages, usage, calls, model: used };
+    if (res.stop !== "tool" || !res.toolCalls.length) {
+      let text = res.text || "(The model returned no text.)";
+      if (res.stop === "max") text += "\n\n(Answer cut off at the length limit; ask for a shorter answer.)";
+      return { text, messages, usage, calls, model: used };
     }
-    const tools = res.content.filter((b) => b.type === "tool_use");
-    if (res.stop_reason !== "tool_use" || !tools.length) {
-      let text = res.content.filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
-      if (res.stop_reason === "max_tokens") text += "\n\n(Answer cut off at the length limit; ask for a shorter answer.)";
-      return { text, messages, usage, calls, model: res.model };
-    }
-    const results = tools.map((b) => {
+    const results = res.toolCalls.map((t) => {
       try {
-        if (b.name !== "what_if" || !Array.isArray(b.input?.changes)) throw new Error("unknown tool or bad input");
-        return { type: "tool_result", tool_use_id: b.id, content: JSON.stringify(runWhatIf(b.input.changes)) };
+        if (t.name !== "what_if" || !Array.isArray(t.input?.changes)) throw new Error("unknown tool or bad input");
+        return { id: t.id, name: t.name, content: JSON.stringify(runWhatIf(t.input.changes)) };
       } catch (e) {
-        return { type: "tool_result", tool_use_id: b.id, is_error: true, content: String(e.message) };
+        return { id: t.id, name: t.name, isError: true, content: JSON.stringify({ error: String(e.message) }) };
       }
     });
-    messages.push({ role: "user", content: results });
+    messages.push(...P.toolResults(results));
   }
-  return { text: "Stopped after several tool calls without an answer. Please ask again more simply.", messages, usage, calls, model: MODEL };
+  return { text: "Stopped after several tool calls without an answer. Please ask again more simply.", messages, usage, calls, model: used };
 }

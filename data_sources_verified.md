@@ -66,6 +66,8 @@ $2 per million input tokens, $10 per million output tokens; cache reads $0.10 pe
 - The smallest model (Haiku 5.5) is cheaper, but a wrong reading of a note or a missed rehearsal-value flag matters more here than a cent per answer.
 - Run Sonnet 5.5 at `effort: "low"` or `"medium"`, set explicitly, since the default is `high`.
 
+**Other providers (added 2026-11-26):** Settings also offers OpenAI, Google Gemini and Groq, each with a model dropdown ("Load models" reads the provider's own list). All four APIs allow browser calls (checked 2026-11-26). Each provider gets the same prompt and the same what-if tool in its own format. The documented choice, prices and costs in this section remain Claude Sonnet 5.5. For other providers the user enters prices from that provider's page.
+
 **Where the key lives:** we use the settings-box route (decision 2026-11-26).
 - River Watch is a static GitHub Pages site with no server. The person using it pastes their own Anthropic key into a **settings box** with three actions: paste, save, forget key.
 - The key is kept **only in that person's browser** (`localStorage`). It is sent only to `https://api.anthropic.com`, in the `x-api-key` header, with Anthropic's `anthropic-dangerous-direct-browser-access: true` header for direct browser calls.
