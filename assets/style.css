@@ -144,3 +144,8 @@ footer p { margin:4px 0; }
   #planTable td:last-child { min-width:0; }
   .tiles { grid-template-columns:repeat(2, minmax(0,1fr)); }
 }
+
+/* follow-up tick box */
+label.check { display:flex; align-items:center; gap:8px; color:var(--ink); margin:10px 0 0; font-size:.88rem; cursor:pointer; }
+label.check input { width:auto; margin:0; accent-color:var(--teal); }
+label.check:has(input:disabled) { opacity:.55; cursor:default; }

@@ -47,7 +47,10 @@
         <textarea id="question" placeholder="Ask a question or a follow-up… (Ctrl+Enter to send)">What is tonight's plan?</textarea>
         <div class="row">
           <button id="askBtn" type="submit" disabled>Send</button>
-          <button id="newChat" type="button" class="secondary">New conversation</button>
+          <button id="newChat" type="button" class="secondary">Clear</button>
+        </div>
+        <label class="check"><input id="followUp" type="checkbox" disabled> Follow-up on the last answer <span class="src">(otherwise each question starts fresh)</span></label>
+        <div>
         </div>
       </form>
       <div class="quick">
@@ -66,7 +69,7 @@
       <strong>Rehearsal values in use.</strong> A flow_override_m3s or warning_override in the team Sheet is replacing live data. Clear those cells after the rehearsal.
     </section>
 
-    <section class="card c-advice">
+    <section class="card c-advice" id="adviceCard" hidden>
       <h2>Advice <span class="src">(AI explanation of the rule results below)</span></h2>
       <div id="chat" aria-live="polite"></div>
       <div id="decision" hidden>
@@ -81,7 +84,7 @@
       </div>
     </section>
 
-    <section class="card c-plan">
+    <section class="card c-plan" id="planCard" hidden>
       <div class="row between">
         <h2>Tonight's plan, town by town <span class="src">(computed by code from The Flood Plan)</span></h2>
         <button id="refreshBtn" type="button" class="secondary">Read live data again</button>
@@ -99,7 +102,7 @@
       <div id="problemsBox" hidden><h3>Data problems</h3><ul id="problems" class="plain flag"></ul></div>
     </section>
 
-    <details class="card c-sources" id="sourcesCard" open>
+    <details class="card c-sources" id="sourcesCard" open hidden>
       <summary>Sources used <span class="src">(each read at the moment of the question)</span></summary>
       <ul id="sources" class="plain"></ul>
       <p class="src">Team Sheet: <a id="sheetLink" target="_blank" rel="noopener">open</a>. Change a cell, then ask again or press "Read live data again".</p>

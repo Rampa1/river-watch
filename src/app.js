@@ -43,9 +43,16 @@ function persist() {
   const num = (v) => (v === "" ? null : Number(v));
   settings.save({ provider: $("#provider").value, model: currentModel(), priceIn: num($("#priceIn").value), priceOut: num($("#priceOut").value) });
 }
+/** Forget the previous question and answer: clears the screen and the AI's memory of the conversation. */
 function resetConversation(note) {
   history = []; $("#chat").innerHTML = ""; $("#decision").hidden = true;
-  if (note) addMsg("bot", `<p class="sub">${esc(note)}</p>`);
+  $("#followUp").checked = false; $("#followUp").disabled = true;
+  if (note) $("#sendStatus").textContent = note;
+}
+/** Results stay hidden until a question is asked (as in Winter Watch). */
+function showResults(on) {
+  for (const id of ["#adviceCard", "#planCard", "#sourcesCard"]) $(id).hidden = !on;
+  if (!on) $("#rehearsal").hidden = true;
 }
 function showKeyState() {
   const p = $("#provider").value, k = settings.key(p);
@@ -217,7 +224,10 @@ async function onAsk(question) {
   if (!key) { $("#sendStatus").textContent = `Save your ${P.label} API key in Settings first.`; $("#settings").open = true; return; }
   if (!model) { $("#sendStatus").textContent = "Choose or type a model in Settings first."; $("#settings").open = true; return; }
   $("#askBtn").disabled = true;
-  addMsg("me", esc(question));
+  const followUp = $("#followUp").checked && history.length > 0;
+  if (!followUp) resetConversation(); // a new question starts fresh: previous Q&A cleared from screen and memory
+  showResults(true);
+  addMsg("me", `${followUp ? '<span class="sub">Follow-up: </span>' : ""}${esc(question)}`);
   const wait = addMsg("bot", "<p><em>Reading live sources and asking the AI…</em></p>");
   $("#sendStatus").textContent = "Fetching the team Sheet, river forecast and warnings…";
   try {
@@ -239,6 +249,8 @@ async function onAsk(question) {
     wait.className = "msg err"; wait.textContent = `Error: ${e.message}`;
   } finally {
     showKeyState(); $("#sendStatus").textContent = ""; showUsage();
+    $("#followUp").disabled = history.length === 0;
+    $("#followUp").checked = false; // each question starts fresh unless follow-up is ticked again
   }
 }
 
@@ -264,11 +276,11 @@ $("#reject").onclick = () => record("Rejected");
 // ---------- wiring ----------
 $("#askForm").onsubmit = (e) => { e.preventDefault(); const q = $("#question").value; $("#question").value = ""; onAsk(q); };
 $("#question").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $("#askForm").requestSubmit(); } });
-document.querySelectorAll("[data-q]").forEach((b) => (b.onclick = () => onAsk(b.dataset.q)));
+document.querySelectorAll("[data-q]").forEach((b) => (b.onclick = () => { $("#followUp").checked = false; onAsk(b.dataset.q); }));
 $("#refreshBtn").onclick = () => refresh().catch((e) => ($("#status").textContent = e.message));
-$("#newChat").onclick = () => resetConversation();
+$("#newChat").onclick = () => { resetConversation(); showResults(false); $("#question").value = ""; };
 $("#clearUsage").onclick = () => { usageLog.clear(); showUsage(); };
 $("#sheetLink").href = sheetViewUrl;
 
+// Nothing is fetched or shown until a question is asked.
 fillProviders(); loadSettings(); showUsage(); showDecisions();
-refresh().catch((e) => ($("#status").innerHTML = `<span class="flag">${esc(e.message)}</span>`));
