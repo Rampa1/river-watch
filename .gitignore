@@ -1,0 +1,11 @@
+# Secrets: never commit
+.env
+.env.*
+node_modules/
+# Course materials and personal working files: not part of the published site
+*.pdf
+*.docx
+*.xlsx
+~$*
+~*.tmp
+*.tmp

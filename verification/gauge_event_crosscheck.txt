@@ -1,0 +1,7 @@
+Fermoy       gauge P99= 254.1 events=22 first4=9 last4=9 winter-days-missing=8 [1, 3, 3, 2, 4, 1, 3, 3, 2]
+Mallow       gauge P99= 197.5 events=21 first4=8 last4=9 winter-days-missing=0 [1, 3, 3, 1, 4, 0, 3, 3, 3]
+Bandon       gauge P99=  90.9 events=19 first4=4 last4=9 winter-days-missing=16 [0, 2, 2, 0, 6, 2, 2, 2, 3]
+Enniscorthy  gauge P99= 100.5 events=13 first4=5 last4=5 winter-days-missing=30 [0, 2, 1, 2, 3, 1, 2, 1, 1]
+Clonmel      gauge P99= 195.7 events=12 first4=7 last4=3 winter-days-missing=20 [0, 3, 1, 3, 2, 0, 2, 1, 0]
+Ennis        gauge P99=  41.7 events= 3 first4=2 last4=1 winter-days-missing=6 [0, 1, 0, 1, 0, 0, 0, 1, 0]
+Athlone      gauge P99= 303.6 events= 1 first4=1 last4=0 winter-days-missing=4 [0, 0, 0, 1, 0, 0, 0, 0, 0]
