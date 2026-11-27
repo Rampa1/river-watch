@@ -1,141 +1,218 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 860" width="1280" height="860" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 960" width="1280" height="960" font-family="Segoe UI, Helvetica, Arial, sans-serif">
   <defs>
-    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
-    </marker>
+    <linearGradient id="river" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0c3a3a"/><stop offset="0.55" stop-color="#11606a"/><stop offset="1" stop-color="#23988a"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eaf6f3"/><stop offset="1" stop-color="#f7fbfa"/>
+    </linearGradient>
+    <linearGradient id="codeFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e2f3f0"/><stop offset="1" stop-color="#f4fbfa"/>
+    </linearGradient>
+    <linearGradient id="waterFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e3f0fb"/><stop offset="1" stop-color="#f5f9fe"/>
+    </linearGradient>
+    <linearGradient id="brainFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#efe8fd"/><stop offset="1" stop-color="#faf7ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0c3a3a" flood-opacity="0.12"/>
+    </filter>
+    <marker id="aAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c26a00"/></marker>
+    <marker id="aBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1d6fb8"/></marker>
+    <marker id="aPurple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker>
+    <marker id="aSlate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker>
+    <marker id="aGrey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a9aa8"/></marker>
     <style>
-      .box{fill:#ffffff;stroke:#94a3b8;stroke-width:1.5}
-      .grp{fill:#f8fafc;stroke:#cbd5e1;stroke-width:1.5}
-      .h{font-size:17px;font-weight:600;fill:#0f172a}
-      .s{font-size:13px;fill:#334155}
-      .t{font-size:12px;fill:#64748b}
-      .lab{font-size:12px;fill:#334155;font-weight:600}
-      .ln{stroke:#334155;stroke-width:1.6;fill:none;marker-end:url(#arr)}
-      .ln2{stroke:#334155;stroke-width:1.6;fill:none;marker-end:url(#arr);stroke-dasharray:5 4}
+      .h{font-size:17px;font-weight:700}
+      .s{font-size:13px;fill:#263b39}
+      .t{font-size:12px;fill:#5b6f6c}
+      .lab{font-size:12px;font-weight:700}
+      .zone{font-size:11.5px;font-weight:700;letter-spacing:1.2px}
+      .card{fill:#ffffff;stroke:#d6e4e1;stroke-width:1.2}
+      .badgeT{font-size:13px;font-weight:800;fill:#ffffff;text-anchor:middle}
     </style>
   </defs>
-  <rect width="1280" height="860" fill="#ffffff"/>
-  <text x="30" y="42" font-size="24" font-weight="700" fill="#0f172a">River Watch: architecture</text>
-  <text x="30" y="66" class="t">A static GitHub Pages site: the page code reads live data, applies the Flood Plan, and Claude explains. The key stays in the user's own browser.</text>
 
-  <!-- trust boundary -->
-  <line x1="290" y1="90" x2="290" y2="640" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="3 5"/>
-  <text x="30" y="104" class="t">PEOPLE AND WHAT THEY SEE</text>
-  <text x="300" y="104" class="t">IN THE BROWSER: github.io page, no server</text>
+  <!-- background -->
+  <rect width="1280" height="960" fill="url(#bg)"/>
 
-  <!-- people -->
-  <rect x="30" y="118" width="230" height="150" rx="10" class="grp"/>
-  <text x="46" y="146" class="h">Who asks</text>
-  <text x="46" y="174" class="s">Duty Officer (by 16:00)</text>
-  <text x="46" y="192" class="t">"Tonight's plan?" "Why Fermoy?"</text>
-  <text x="46" y="208" class="t">"What if the Suir hits 150 m³/s?"</text>
-  <text x="46" y="234" class="s">Area Manager</text>
-  <text x="46" y="252" class="t">"Which town first for a study?"</text>
+  <!-- header: flowing river -->
+  <path d="M0,0 H1280 V82 C1180,100 1080,66 960,84 C840,102 740,66 620,84 C500,102 400,66 280,84 C170,100 80,70 0,86 Z" fill="url(#river)"/>
+  <path d="M0,94 C110,80 190,108 300,94 C420,78 520,110 640,94 C760,78 860,110 980,94 C1090,80 1180,106 1280,92" fill="none" stroke="#7fd3c6" stroke-width="2" opacity="0.7"/>
+  <text x="34" y="44" font-size="26" font-weight="800" fill="#ffffff"><tspan fill="#bff0e8">≋</tspan>  River Watch: architecture</text>
+  <text x="36" y="70" font-size="13.5" fill="#d9f3ee">A static GitHub Pages site: the page reads live data, applies The Flood Plan in code, and Claude explains. The key never leaves the user's browser.</text>
 
-  <!-- page -->
-  <rect x="30" y="330" width="230" height="230" rx="10" class="box" stroke="#2563eb"/>
-  <text x="46" y="358" class="h" fill="#1d4ed8">Page view (github.io)</text>
-  <text x="46" y="384" class="s">Tonight's level per town</text>
-  <text x="46" y="403" class="s">Crew allocation + flags</text>
-  <text x="46" y="422" class="s">Question box</text>
-  <text x="46" y="441" class="s">Every number with its source</text>
-  <text x="46" y="460" class="s">and "rehearsal value" labels</text>
-  <text x="46" y="479" class="s">"AI can make mistakes; a person</text><text x="46" y="496" class="s">makes the final decision."</text>
-  <text x="46" y="524" class="t">Person decides and records</text>
-  <text x="46" y="540" class="t">the reason (Flood Plan Rule 1)</text>
+  <!-- zone labels -->
+  <text x="34" y="130" class="zone" fill="#b45309">PEOPLE AND WHAT THEY SEE</text>
+  <text x="322" y="130" class="zone" fill="#11606a">IN THE BROWSER · github.io · NO SERVER</text>
+  <text x="872" y="130" class="zone" fill="#1d6fb8">OUTSIDE SERVICES</text>
+  <line x1="292" y1="118" x2="292" y2="680" stroke="#9cc9c1" stroke-width="1.4" stroke-dasharray="2 6"/>
 
-  <path d="M145,268 L145,326" class="ln"/>
-  <text x="153" y="302" class="lab">asks / reads</text>
+  <!-- ===== PEOPLE ===== -->
+  <g filter="url(#shadow)"><rect x="30" y="142" width="236" height="152" rx="12" fill="#fff7e8" stroke="#e0a54a" stroke-width="1.6"/></g>
+  <rect x="30" y="142" width="236" height="6" rx="3" fill="#d98a1c"/>
+  <circle cx="54" cy="174" r="9" fill="#d98a1c"/><path d="M42,192 a12,9 0 0 1 24,0" fill="#d98a1c"/>
+  <text x="74" y="180" class="h" fill="#8a4b00">Who asks</text>
+  <text x="46" y="210" class="s" font-weight="600">Duty Officer (by 16:00)</text>
+  <text x="46" y="227" class="t">"Tonight's plan?" "Why Fermoy?"</text>
+  <text x="46" y="243" class="t">"What if the Suir hits 150 m³/s?"</text>
+  <text x="46" y="266" class="s" font-weight="600">Area Manager</text>
+  <text x="46" y="283" class="t">"Which town first for a study?"</text>
 
-  <!-- server -->
-  <rect x="320" y="118" width="480" height="522" rx="12" class="grp" stroke="#0f172a"/>
-  <text x="338" y="146" class="h">Page code (JavaScript)</text>
-  <text x="540" y="146" class="t">(runs in the user's browser)</text>
+  <!-- ① ask -->
+  <path d="M148,296 L148,350" stroke="#c26a00" stroke-width="2.2" fill="none" marker-end="url(#aAmber)"/>
+  <circle cx="176" cy="322" r="12" fill="#c26a00"/><text x="176" y="327" class="badgeT">1</text>
+  <text x="194" y="327" class="lab" fill="#a15800">asks</text>
 
-  <rect x="338" y="160" width="444" height="44" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
-  <text x="352" y="180" class="lab" fill="#92400e">Settings: choose provider + model; paste / save / forget own key</text><text x="352" y="197" class="t" fill="#92400e">Stored in this browser only (localStorage); never in repo or page source</text>
+  <!-- ===== PAGE VIEW ===== -->
+  <g filter="url(#shadow)"><rect x="30" y="356" width="236" height="300" rx="12" fill="#ffffff" stroke="#23988a" stroke-width="1.8"/></g>
+  <rect x="30" y="356" width="236" height="34" rx="12" fill="#16737c"/><rect x="30" y="378" width="236" height="12" fill="#16737c"/>
+  <text x="46" y="379" class="h" fill="#ffffff">Page view (github.io)</text>
+  <text x="46" y="414" class="s">Tonight's level for each town:</text>
+  <rect x="46" y="424" width="62" height="20" rx="10" fill="#e0f4e8"/><text x="77" y="438" font-size="11.5" font-weight="700" fill="#137a43" text-anchor="middle">Normal</text>
+  <rect x="114" y="424" width="64" height="20" rx="10" fill="#fff3d6"/><text x="146" y="438" font-size="11.5" font-weight="700" fill="#8a5a00" text-anchor="middle">Standby</text>
+  <rect x="184" y="424" width="68" height="20" rx="10" fill="#fdebea"/><text x="218" y="438" font-size="11.5" font-weight="700" fill="#b3261e" text-anchor="middle">Barriers</text>
+  <text x="46" y="468" class="s">Crew allocation + flags</text>
+  <text x="46" y="487" class="s">Question box + quick questions</text>
+  <text x="46" y="506" class="s">Every number with its source</text>
+  <text x="46" y="523" class="s">and "rehearsal value" labels</text>
+  <rect x="44" y="536" width="208" height="40" rx="7" fill="#fff3d6" stroke="#e7c27a"/>
+  <text x="54" y="552" font-size="11.5" font-weight="700" fill="#7a4b00">"AI can make mistakes; a person</text>
+  <text x="54" y="568" font-size="11.5" font-weight="700" fill="#7a4b00">makes the final decision."</text>
+  <circle cx="58" cy="606" r="12" fill="#c26a00"/><text x="58" y="611" class="badgeT">5</text>
+  <text x="78" y="602" class="s" font-weight="700" fill="#8a4b00">Duty Officer decides</text>
+  <text x="78" y="619" class="t">Approve / Reject + reason</text>
+  <text x="78" y="635" class="t">(Flood Plan Rule 1)</text>
 
-  <rect x="338" y="220" width="444" height="170" rx="8" class="box"/>
-  <text x="352" y="246" class="h">1. Flood Plan rules in code</text>
-  <text x="352" y="270" class="s">Forecast peak = max(today, +1, +2 days)</text>
-  <text x="352" y="289" class="s">vs town's own P95 / P99 → Normal / Standby / Barriers</text>
-  <text x="352" y="308" class="s">Orange/red rain warning in next 48 h → +1 level</text>
-  <text x="352" y="327" class="s">Overrides from Sheet = rehearsal values (Rule 5)</text>
-  <text x="352" y="346" class="s">Crews: 3 crews × 2 towns, areas, ranking (Rule 6)</text>
-  <text x="352" y="365" class="s">No barrier set → Standby + flag (Rule 7)</text>
+  <!-- ===== PAGE CODE ===== -->
+  <g filter="url(#shadow)"><rect x="320" y="142" width="482" height="538" rx="14" fill="url(#codeFill)" stroke="#11606a" stroke-width="1.8"/></g>
+  <text x="340" y="172" class="h" fill="#0c3a3a">Page code (JavaScript)</text>
+  <text x="538" y="172" class="t">runs in the user's browser</text>
 
-  <rect x="338" y="406" width="444" height="104" rx="8" class="box"/>
-  <text x="352" y="432" class="h">2. Ask Claude to explain</text>
-  <text x="352" y="456" class="s">Sends the computed plan + question, not raw history</text>
-  <text x="352" y="475" class="s">Out of scope or no data → says so (Rule 9)</text>
-  <text x="352" y="494" class="s">max_tokens 4,000 per answer</text>
+  <!-- settings / key -->
+  <rect x="338" y="186" width="446" height="50" rx="9" fill="#fff6dc" stroke="#d4a017" stroke-width="1.5"/>
+  <circle cx="361" cy="211" r="7" fill="none" stroke="#b7791f" stroke-width="3"/>
+  <path d="M368,211 H386 M380,211 V218 M385,211 V216" stroke="#b7791f" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <text x="398" y="206" class="lab" fill="#7a4b00">Settings: choose provider + model · paste / save / forget own key</text>
+  <text x="398" y="224" class="t" fill="#8a5a00">Kept in this browser only (localStorage), never in the repo or page</text>
 
-  <rect x="338" y="526" width="444" height="96" rx="8" class="box"/>
-  <text x="352" y="552" class="h">3. Reply to the page</text>
-  <text x="352" y="576" class="s">Answer + every number's source and time</text>
-  <text x="352" y="595" class="s">Flags any rehearsal value or code/headline mismatch</text>
+  <!-- step 3: rules -->
+  <rect x="338" y="250" width="446" height="168" rx="9" class="card"/>
+  <rect x="338" y="250" width="6" height="168" rx="3" fill="#16737c"/>
+  <circle cx="368" cy="274" r="12" fill="#16737c"/><text x="368" y="279" class="badgeT">3</text>
+  <text x="388" y="280" class="h" fill="#0c3a3a">Flood Plan rules, in code</text>
+  <text x="358" y="304" class="s">Forecast peak = max(today, +1, +2 days)</text>
+  <text x="358" y="323" class="s">vs the town's own P95 / P99 → Normal / Standby / Barriers</text>
+  <text x="358" y="342" class="s">Orange / red rain warning in the next 48 h → up one level</text>
+  <text x="358" y="361" class="s">Sheet overrides = rehearsal values (Rule 5)</text>
+  <text x="358" y="380" class="s">Crews: 3 crews × 2 towns, areas, ranking (Rule 6)</text>
+  <text x="358" y="399" class="s">No barrier set → Standby measures + flag (Rule 7)</text>
 
-  <!-- page <-> server -->
-  <path d="M262,420 L334,420" class="ln"/>
-  <text x="264" y="410" class="lab">question</text>
-  <path d="M336,574 C300,574 300,520 264,520" class="ln"/>
-  <text x="268" y="600" class="lab">answer</text>
+  <!-- step 4: ask Claude -->
+  <rect x="338" y="432" width="446" height="104" rx="9" class="card"/>
+  <rect x="338" y="432" width="6" height="104" rx="3" fill="#7c3aed"/>
+  <circle cx="368" cy="456" r="12" fill="#7c3aed"/><text x="368" y="461" class="badgeT">4</text>
+  <text x="388" y="462" class="h" fill="#4c1d95">Ask Claude to explain</text>
+  <text x="358" y="486" class="s">Sends the computed plan + question, never raw history</text>
+  <text x="358" y="505" class="s">Out of scope or no data → says so (Rule 9)</text>
+  <text x="358" y="524" class="s">max_tokens 4,000 per answer</text>
 
-  <!-- live sources -->
-  <rect x="870" y="118" width="380" height="286" rx="12" class="grp" stroke="#15803d"/>
-  <text x="888" y="146" class="h" fill="#15803d">Live sources (read at request time)</text>
+  <!-- reply -->
+  <rect x="338" y="550" width="446" height="112" rx="9" class="card"/>
+  <rect x="338" y="550" width="6" height="112" rx="3" fill="#c26a00"/>
+  <text x="358" y="576" class="h" fill="#8a4b00">Reply to the page</text>
+  <text x="358" y="600" class="s">Answer + every number's source and time</text>
+  <text x="358" y="619" class="s">Flags any rehearsal value or code / headline mismatch</text>
+  <text x="358" y="638" class="s">Each new question re-reads every live source</text>
 
-  <rect x="888" y="160" width="344" height="72" rx="8" class="box"/>
-  <text x="902" y="184" class="lab">Open-Meteo Flood API (GloFAS)</text>
-  <text x="902" y="203" class="t">river_discharge forecast, 8 river cells</text>
-  <text x="902" y="220" class="t">CC BY 4.0, "Weather data by Open-Meteo.com"</text>
+  <!-- ① question in, ⑤ answer out -->
+  <path d="M268,404 L334,404" stroke="#c26a00" stroke-width="2.2" fill="none" marker-end="url(#aAmber)"/>
+  <text x="293" y="395" font-size="11" font-weight="700" fill="#a15800" text-anchor="middle">question</text>
+  <path d="M336,600 C300,600 302,560 270,560" stroke="#c26a00" stroke-width="2.2" fill="none" marker-end="url(#aAmber)"/>
+  <text x="293" y="626" font-size="11" font-weight="700" fill="#a15800" text-anchor="middle">answer</text>
 
-  <rect x="888" y="242" width="344" height="72" rx="8" class="box"/>
-  <text x="902" y="266" class="lab">Met Éireann warnings JSON</text>
-  <text x="902" y="285" class="t">regions EIxx codes → counties (+ Roscommon)</text>
-  <text x="902" y="302" class="t">Custom open licence: text unaltered, expired removed</text>
+  <!-- ===== LIVE SOURCES ===== -->
+  <g filter="url(#shadow)"><rect x="870" y="142" width="382" height="296" rx="14" fill="url(#waterFill)" stroke="#1d6fb8" stroke-width="1.6"/></g>
+  <path d="M888,166 q6,-6 12,0 t12,0 t12,0 M888,174 q6,-6 12,0 t12,0 t12,0" stroke="#1d6fb8" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <text x="934" y="174" class="h" fill="#14507a">Live sources, read at each question</text>
 
-  <rect x="888" y="324" width="344" height="68" rx="8" class="box"/>
-  <text x="902" y="348" class="lab">Google team Sheet (11 columns)</text>
-  <text x="902" y="367" class="t">resources, notes, flow/warning overrides</text>
-  <text x="902" y="383" class="t">edit a number → advice changes on next ask</text>
+  <rect x="888" y="188" width="346" height="72" rx="9" class="card"/><rect x="888" y="188" width="6" height="72" rx="3" fill="#1d6fb8"/>
+  <text x="906" y="211" class="lab" fill="#14507a">Open-Meteo Flood API (GloFAS)</text>
+  <text x="906" y="230" class="t">River-flow forecast for 8 river cells</text>
+  <text x="906" y="247" class="t">CC BY 4.0 · "Weather data by Open-Meteo.com"</text>
 
-  <path d="M784,290 L866,290" class="ln"/>
-  <text x="792" y="280" class="lab">fetch</text>
+  <rect x="888" y="270" width="346" height="72" rx="9" class="card"/><rect x="888" y="270" width="6" height="72" rx="3" fill="#e0782a"/>
+  <text x="906" y="293" class="lab" fill="#a3480a">Met Éireann warnings (JSON)</text>
+  <text x="906" y="312" class="t">EI county codes → counties (+ Roscommon)</text>
+  <text x="906" y="329" class="t">Text shown unaltered · expired warnings removed</text>
 
-  <!-- anthropic -->
-  <rect x="870" y="440" width="380" height="150" rx="12" class="box" stroke="#7c3aed"/>
-  <text x="888" y="468" class="h" fill="#6d28d9">The brain: Anthropic Claude API</text>
-  <text x="888" y="494" class="s">claude-sonnet-5-5 (default), effort medium</text>
-  <text x="888" y="514" class="s">≈ $0.02 per answer · OpenAI/Gemini/Groq selectable</text>
-  <text x="888" y="540" class="t">Key from a dedicated workspace; spend limits:</text>
-  <text x="888" y="557" class="t">workspace and organisation (e.g. $10/month)</text>
-  <text x="888" y="574" class="t">→ a leaked key cannot spend more than funded</text>
+  <rect x="888" y="352" width="346" height="72" rx="9" class="card"/><rect x="888" y="352" width="6" height="72" rx="3" fill="#137a43"/>
+  <text x="906" y="375" class="lab" fill="#0f5e34">Google team Sheet (11 columns)</text>
+  <text x="906" y="394" class="t">Crews, barrier sets, notes, rehearsal overrides</text>
+  <text x="906" y="411" class="t">Edit a cell → the next answer changes</text>
 
-  <path d="M784,458 L866,458" class="ln"/>
-  <text x="790" y="448" class="lab">prompt + key</text>
-  <path d="M866,494 L788,494" class="ln"/>
-  <text x="800" y="512" class="lab">text</text>
+  <!-- ② live data in -->
+  <path d="M866,300 L788,300" stroke="#1d6fb8" stroke-width="2.4" fill="none" marker-end="url(#aBlue)"/>
+  <circle cx="826" cy="278" r="12" fill="#1d6fb8"/><text x="826" y="283" class="badgeT">2</text>
+  <text x="836" y="320" font-size="11" font-weight="700" fill="#14507a" text-anchor="middle">live data</text><text x="836" y="333" font-size="11" font-weight="700" fill="#14507a" text-anchor="middle">in</text>
 
-  <!-- stored -->
-  <rect x="320" y="690" width="480" height="140" rx="12" class="grp"/>
-  <text x="338" y="718" class="h">Stored files (computed once, read each time)</text>
-  <text x="338" y="744" class="s">history_summary.json: per-town river cell, P95, P99 (GloFAS 2016–2025)</text>
-  <text x="338" y="764" class="s">study_ranking.json: Rule 8 winter events (OPW gauges)</text>
-  <text x="338" y="784" class="s">County code table (EI codes, proven / consistent)</text>
-  <text x="338" y="812" class="t">No years of daily data sent to the model on any question</text>
+  <!-- ===== BRAIN ===== -->
+  <g filter="url(#shadow)"><rect x="870" y="466" width="382" height="166" rx="14" fill="url(#brainFill)" stroke="#7c3aed" stroke-width="1.8"/></g>
+  <circle cx="900" cy="496" r="14" fill="#7c3aed"/>
+  <path d="M893,496 q3,-8 7,0 q3,8 7,0 M900,489 v14" stroke="#ffffff" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <text x="922" y="502" class="h" fill="#4c1d95">The brain: Anthropic Claude API</text>
+  <text x="888" y="530" class="s"><tspan font-weight="700">claude-sonnet-5-5</tspan> (default) · effort medium</text>
+  <text x="888" y="550" class="s">≈ $0.023 per answer · OpenAI / Gemini / Groq selectable</text>
+  <rect x="886" y="562" width="350" height="56" rx="8" fill="#ffffff" stroke="#d9ccf7"/>
+  <text x="898" y="582" class="t" fill="#4c1d95">Key from a dedicated workspace with spend limits</text>
+  <text x="898" y="599" class="t" fill="#4c1d95">(workspace + organisation, e.g. $10 a month)</text>
+  <text x="898" y="613" class="t" font-weight="700" fill="#6d28d9">→ a leaked key cannot spend more than funded</text>
 
-  <path d="M560,688 L560,644" class="ln"/>
-  <text x="568" y="670" class="lab">read</text>
+  <!-- ④ prompt out, explanation back -->
+  <path d="M788,474 L866,474" stroke="#7c3aed" stroke-width="2.4" fill="none" marker-end="url(#aPurple)"/>
+  <text x="836" y="465" font-size="10.5" font-weight="700" fill="#6d28d9" text-anchor="middle">prompt+key</text>
+  <path d="M866,512 L788,512" stroke="#7c3aed" stroke-width="2.4" fill="none" stroke-dasharray="7 4" marker-end="url(#aPurple)"/>
+  <text x="836" y="529" font-size="10.5" font-weight="700" fill="#6d28d9" text-anchor="middle">explanation</text>
 
-  <!-- offline build -->
-  <rect x="870" y="690" width="380" height="140" rx="12" class="box" stroke-dasharray="6 4"/>
-  <text x="888" y="718" class="h">Offline build (scripts in verification/)</text>
-  <text x="888" y="744" class="s">Open-Meteo history 2016–2025 (GloFAS)</text>
-  <text x="888" y="764" class="s">OPW Hydro-Data gauged flow (CC BY 4.0)</text>
-  <text x="888" y="784" class="s">Open-Meteo Geocoding (GeoNames)</text>
-  <text x="888" y="812" class="t">Re-run only when the period or river cells change</text>
+  <!-- ===== STORED FILES ===== -->
+  <g filter="url(#shadow)"><rect x="320" y="716" width="482" height="132" rx="14" fill="#eef2f6" stroke="#64748b" stroke-width="1.6"/></g>
+  <rect x="340" y="734" width="18" height="22" rx="2" fill="#64748b"/><rect x="344" y="730" width="18" height="22" rx="2" fill="#94a3b8"/>
+  <text x="372" y="750" class="h" fill="#334155">Stored files (computed once, read every time)</text>
+  <text x="340" y="776" class="s">history_summary.json: each town's river cell, P95, P99 (GloFAS 2016–2025)</text>
+  <text x="340" y="795" class="s">study_ranking.json: Rule 8 winter events (OPW gauges)</text>
+  <text x="340" y="814" class="s">EI county-code table (proven / consistent)</text>
+  <text x="340" y="835" class="t">No years of daily data are ever sent to the model</text>
 
-  <path d="M868,760 L804,760" class="ln2"/>
-  <text x="808" y="750" class="lab">once</text>
+  <path d="M561,714 L561,684" stroke="#475569" stroke-width="2.2" fill="none" marker-end="url(#aSlate)"/>
+  <text x="571" y="704" class="lab" fill="#334155">thresholds in</text>
+
+  <!-- ===== OFFLINE BUILD ===== -->
+  <rect x="870" y="716" width="382" height="132" rx="14" fill="#ffffff" stroke="#8a9aa8" stroke-width="1.6" stroke-dasharray="7 5"/>
+  <text x="888" y="746" class="h" fill="#475569">Offline build, run once</text>
+  <text x="1094" y="746" class="t">(scripts in verification/)</text>
+  <text x="888" y="772" class="s">Open-Meteo history 2016–2025 (GloFAS)</text>
+  <text x="888" y="791" class="s">OPW Hydro-Data gauged flow: the river check</text>
+  <text x="888" y="810" class="s">Open-Meteo Geocoding (GeoNames): town locations</text>
+  <text x="888" y="833" class="t">Re-run only if the period or the river cells change</text>
+  <path d="M866,782 L806,782" stroke="#8a9aa8" stroke-width="2.2" fill="none" stroke-dasharray="6 4" marker-end="url(#aGrey)"/>
+  <text x="836" y="772" font-size="11" font-weight="700" fill="#64748b" text-anchor="middle">once</text>
+
+  <!-- ===== LEGEND ===== -->
+  <rect x="30" y="866" width="1222" height="40" rx="10" fill="#ffffff" stroke="#d6e4e1"/>
+  <text x="46" y="891" class="lab" fill="#0c3a3a">Follow one question:</text>
+  <circle cx="200" cy="886" r="10" fill="#c26a00"/><text x="200" y="890.5" font-size="11" font-weight="800" fill="#fff" text-anchor="middle">1</text><text x="215" y="891" class="t">asked</text>
+  <circle cx="270" cy="886" r="10" fill="#1d6fb8"/><text x="270" y="890.5" font-size="11" font-weight="800" fill="#fff" text-anchor="middle">2</text><text x="285" y="891" class="t">live data read</text>
+  <circle cx="380" cy="886" r="10" fill="#16737c"/><text x="380" y="890.5" font-size="11" font-weight="800" fill="#fff" text-anchor="middle">3</text><text x="395" y="891" class="t">rules applied</text>
+  <circle cx="484" cy="886" r="10" fill="#7c3aed"/><text x="484" y="890.5" font-size="11" font-weight="800" fill="#fff" text-anchor="middle">4</text><text x="499" y="891" class="t">Claude explains</text>
+  <circle cx="602" cy="886" r="10" fill="#c26a00"/><text x="602" y="890.5" font-size="11" font-weight="800" fill="#fff" text-anchor="middle">5</text><text x="617" y="891" class="t">person decides</text>
+  <line x1="730" y1="886" x2="760" y2="886" stroke="#c26a00" stroke-width="2.4"/><text x="766" y="891" class="t">question / answer</text>
+  <line x1="872" y1="886" x2="902" y2="886" stroke="#1d6fb8" stroke-width="2.4"/><text x="908" y="891" class="t">live data</text>
+  <line x1="972" y1="886" x2="1002" y2="886" stroke="#7c3aed" stroke-width="2.4"/><text x="1008" y="891" class="t">AI</text>
+  <line x1="1036" y1="886" x2="1066" y2="886" stroke="#475569" stroke-width="2.4"/><text x="1072" y="891" class="t">stored</text>
+  <line x1="1124" y1="886" x2="1154" y2="886" stroke="#8a9aa8" stroke-width="2.4" stroke-dasharray="5 3"/><text x="1160" y="891" class="t">built once</text>
+
+  <!-- river footer -->
+  <path d="M0,930 C110,918 190,944 300,930 C420,916 520,946 640,930 C760,916 860,946 980,930 C1090,918 1180,942 1280,928 V960 H0 Z" fill="#23988a" opacity="0.18"/>
+  <path d="M0,942 C120,932 200,954 320,942 C440,930 540,956 660,942 C780,930 880,956 1000,942 C1110,932 1190,952 1280,940 V960 H0 Z" fill="#16737c" opacity="0.22"/>
 </svg>
