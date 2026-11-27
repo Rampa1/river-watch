@@ -21,14 +21,16 @@ Screenshots are in `test/` (file names in the last column).
 
 **Note A (test 1b).** The levels, crew, flags and rehearsal labels all match. One gap: the Standby action listed the measures ("staff on call confirmed, pumps checked, sandbags staged") but not Athlone's numbers from the Sheet (6 staff, 5 pumps, 2,500 sandbags). This was improved; see R1.
 
+**Sheet reset.** After the retest both override cells were cleared. The live Sheet was checked against `sheet/river_watch_team_sheet.csv` and is identical to the starter values (`1a-sheet`, Google Sheets view).
+
 **Run order.** The rehearsal values were in the Sheet for tests 2, 1b, 3, 4 and 5. Test 1a was run at 07:31 with them cleared. Every answer stated whether rehearsal values were in use and which towns they affected. Tests 2–5 concern towns or data the overrides do not touch (Clonmel, the stored Rule 8 ranking, Mallow).
 
 ## Errors found and fixed
 
 | # | What was wrong | What was changed | Retest |
 |---|---|---|---|
-| R1 | Test 1b: the Standby action did not show the Sheet's resource numbers. | `src/plan.js`: the Standby action now reads e.g. "Standby: 6 staff on call confirmed, 5 pumps checked, 2500 sandbags staged". New unit test added; all 29 tests pass. | *(retest: with Athlone `warning_override` = orange, ask "What is tonight's plan?" and screenshot `R1-answer`. Expected: Athlone Standby with 6 / 5 / 2500.)* |
-| R2 | **Cost.** In 4 of 6 answers (tests 2, 3, 4, 5) the cost was ≈ $0.004 higher than tokens × price. The whole prompt was being written to Anthropic's 5-minute prompt cache (1.25 × input price). Every question carries new live data, so the cached copy was never read back: about 20% extra cost for nothing. | `src/providers.js`: automatic prompt caching removed. Unit test added to check it is not sent. | *(retest: ask any question and check the cost line equals tokens × $2/M + tokens × $10/M, with no extra.)* |
+| R1 | Test 1b: the Standby action did not show the Sheet's resource numbers. | `src/plan.js`: the Standby action now reads e.g. "Standby: 6 staff on call confirmed, 5 pumps checked, 2500 sandbags staged". New unit test added; all 29 tests pass. | ✅ **Retest 08:52** (`R1-answer`), still with Fermoy 140 and Athlone orange. The table action reads "Standby: 6 staff on call confirmed, 5 pumps checked, 2500 sandbags staged". The answer reads "Athlone: Standby (rehearsal). The recommended measures are 6 staff on call confirmed, 5 pumps checked and 2,500 sandbags staged." Everything else is unchanged from 1b (Fermoy Barriers with the Clonmel crew). **Fixed.** |
+| R2 | **Cost.** In 4 of 6 answers (tests 2, 3, 4, 5) the cost was ≈ $0.004 higher than tokens × price. The whole prompt was being written to Anthropic's 5-minute prompt cache (1.25 × input price). Every question carries new live data, so the cached copy was never read back: about 20% extra cost for nothing. | `src/providers.js`: automatic prompt caching removed. Unit test added to check it is not sent. | ✅ **Retest 08:52** (`R1-answer`): 8,255 in + 998 out. 8,255 × $2/M + 998 × $10/M = $0.01651 + $0.00998 = **$0.0265**, exactly the cost shown, with no cache premium. **Fixed.** |
 
 ## Cost
 
@@ -40,8 +42,9 @@ Screenshots are in `test/` (file names in the last column).
 | 3 | 07:37 | 8,257 | 438 | $0.0250 | $0.0209 |
 | 4 | 08:15 | 8,253 | 574 | $0.0264 | $0.0222 |
 | 5 | 08:28 | 8,251 | 492 | $0.0255 | $0.0214 |
-| **Average** | | **≈ 8,200** | **≈ 620** | **$0.0254** | **$0.0227** (after fix R2) |
+| R1/R2 retest | 08:52 | 8,255 | 998 | $0.0265 | $0.0265 ✅ |
+| **Average of tests 1–5** | | **≈ 8,200** | **≈ 620** | **$0.0254** | **$0.0227** (after fix R2) |
 
 - **Cost per answer (measured):** **≈ $0.025** before fix R2, **≈ $0.023** after it. Sonnet 5.5 is $2 / $10 per million input / output tokens (Anthropic pricing page, checked 26 Nov 2026). The estimate before testing was ≈ $0.02. Input was about twice the estimate (≈ 8,200 tokens, not 4,000), because each question sends the full computed plan with its sources. Output was lower than estimated.
-- **Questions sent while building and testing:** *(from the page counter, "N question(s) sent from this browser", plus the Anthropic Console → Usage for the River Watch workspace)*.
+- **Questions sent while building and testing:** **15 questions**, total **$0.400**, average **$0.0267** per answer (page counter, `cost.png`). That covers building checks, the six tests and the retest, and most were before fix R2.
 - **At 1,000 questions a month:** ≈ $23 (after R2), ≈ $25 (before).

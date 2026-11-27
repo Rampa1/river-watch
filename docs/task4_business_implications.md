@@ -6,7 +6,7 @@ Each afternoon the Duty Officer reads four websites and a spreadsheet to make th
 
 This fits what Ireland is building. Met Éireann's Flood Forecasting Centre has run since early 2024 with 36 river-catchment models, but it advises local authorities and emergency responders. Localised public warnings are a later phase that had not begun by January 2026 [1][2]. Dublin City Council is piloting an AI early-warning system this winter that gave 13–21 hours' notice in trials, presented as helping engineers "make better decisions" [3]. River Watch likewise supports the 16:00 decision on levels and crews. It must never make that decision alone, send a crew or judge an individual home.
 
-**Cost.** Testing measured about $0.023 per answer, so 1,000 questions a month cost about $23 on Claude Sonnet 5.5. A cheaper brain (Claude Haiku 5.5, about $1 a month) is more likely to misread a note such as the Mallow crew restriction. A dearer one (Claude Opus 5.5, about $45) adds little, because the rules are computed in code, not by the model. The data is free, but Open-Meteo's free tier is non-commercial (10,000 calls a day), so council use needs its paid plan.
+**Cost.** Testing measured $0.023–0.027 per answer, so 1,000 questions a month cost about $23–27 on Claude Sonnet 5.5. A cheaper brain (Claude Haiku 5.5, about $1 a month) is more likely to misread a note such as the Mallow crew restriction. A dearer one (Claude Opus 5.5, about $45) adds little, because the rules are computed in code, not by the model. The data is free, but Open-Meteo's free tier is non-commercial (10,000 calls a day), so council use needs its paid plan.
 
 **Risks, and what goes in place before the team relies on it:**
 - *A wrong number from the wrong place.* Four of the eight towns first landed on a non-river grid cell. Each point is now checked against an OPW gauge.
@@ -23,4 +23,4 @@ I recommend a supervised winter trial alongside the current process first.
 2. RTÉ Prime Time, "Met Éireann clarifies communication after Minister raises concerns", 29–30 Jan 2026. https://www.rte.ie/news/primetime/2026/0129/1555851-met-eireann-defends-communication-after-minister-raises-concerns
 3. Irish Examiner, "New AI early warning system for major floods to pilot in Dublin City", 16 Nov 2026. https://www.irishexaminer.com/news/arid-41938083.html
 
-*Cost basis:* measured in Task 3 (27 Nov 2026): about 8,200 input and 620 output tokens per answer. Anthropic pricing page, checked 26 Nov 2026: Sonnet 5.5 at $2/$10 per million gives $0.023; Haiku 5.5 at $0.10/$0.50 gives $0.0011; Opus 5.5 at $4/$20 gives $0.045.
+*Cost basis:* measured in Task 3 (27 Nov 2026): 15 questions cost $0.40 in total (average $0.027, mostly before a caching fix). After the fix, about 8,200 input and 620 output tokens per answer. Anthropic pricing page, checked 26 Nov 2026: Sonnet 5.5 at $2/$10 per million gives $0.023; Haiku 5.5 at $0.10/$0.50 gives $0.0011; Opus 5.5 at $4/$20 gives $0.045.
