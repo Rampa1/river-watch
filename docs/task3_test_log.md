@@ -1,12 +1,8 @@
-# Task 3: Test log (River Watch)
+# Task 3: Test log
 
-Site: https://rampa1.github.io/river-watch/ · Team Sheet: https://docs.google.com/spreadsheets/d/17rEoTPrySBwY3lQngmYzxDQPWpAAM0UuSqYL8bN5xMo/edit · Brain: Anthropic `claude-sonnet-5-5` · Tests run 27 Nov 2026, 07:24–08:28.
+Site: https://rampa1.github.io/river-watch/ · Brain: Anthropic `claude-sonnet-5-5` · Tests run 27 Nov 2026, 07:24–08:52.
 
-**How the expected answers were worked out (before asking):**
-- They come from The Flood Plan, the Sheet and the live sources, using an independent Python script, `verification/expected_plan.py`. It does not use the site's code: it recomputes P95/P99 itself with Python's `statistics.quantiles`, and reads the Sheet, Open-Meteo and Met Éireann directly.
-- The run was at **06:28**, before any question was asked. It is saved as `verification/expected_run_2026-11-27_0629.txt`.
-
-Screenshots are in `test/` (file names in the last column).
+Expected answers were worked out at 06:28, before any question, by an independent script (`verification/expected_plan.py`). It reads the Sheet and live sources itself and recomputes P95/P99 without the site's code. Screenshots are in the Evidence section.
 
 ## Test log
 
@@ -19,11 +15,9 @@ Screenshots are in `test/` (file names in the last column).
 | 4 | **Area Manager.** "Which town should be first in line for a flood-defence study?" (08:15) | **Fermoy**: 22 high-flow events, winters 2016/17–2024/25, OPW gauge 18107. Mallow 21. Last four winters **not** more than first four (**9 vs 9**). Limit: ignores event length, damage and existing defences. | "**Fermoy** should be first in line … from the stored Rule 8 ranking … measured OPW gauge flow." "Fermoy: 22 high-flow events … OPW gauge 18107 Fermoy Br D/S." "Runner-up: Mallow, with 21 events … very close." "The last four winters did not have more events than the first four. Fermoy had 9 in each period." Cannot tell: "a one-day spike and a two-week flood" are counted the same; no information on damage or defences already in place; Athlone's single event lasted weeks. Caveats: GloFAS vs gauge scale, 8 missing winter days, Carrick from GloFAS with low confidence. | ✅ Match | `4-answer` |
 | 5 | **Out of scope.** "Will my house in Mallow flood tonight?" (08:28) | Declines to predict for an individual home (Flood Plan Rule 9) and refers to the **council's area office**. May mention Mallow's town-level status. No house-level claim. | "I can't say whether your house will flood. Anything about an individual home is outside what River Watch covers (Rule 9). Please contact the council's area office." It then gives only town-level river data (Mallow Normal; peak 16.14 m³/s on 28 Nov vs P95 44.6), and says it "doesn't cover coastal or tidal flooding, local surface water or road conditions, or conditions at your address." | ✅ Match | `5-answer` |
 
-**Note A (test 1b).** The levels, crew, flags and rehearsal labels all match. One gap: the Standby action listed the measures ("staff on call confirmed, pumps checked, sandbags staged") but not Athlone's numbers from the Sheet (6 staff, 5 pumps, 2,500 sandbags). This was improved; see R1.
+**Note A:** test 1b matched, except that the Standby action did not list Athlone's resource numbers (fixed in R1).
 
-**Sheet reset.** After the retest both override cells were cleared. The live Sheet was checked against `sheet/river_watch_team_sheet.csv` and is identical to the starter values (`1a-sheet`, Google Sheets view).
-
-**Run order.** The rehearsal values were in the Sheet for tests 2, 1b, 3, 4 and 5. Test 1a was run at 07:31 with them cleared. Every answer stated whether rehearsal values were in use and which towns they affected. Tests 2–5 concern towns or data the overrides do not touch (Clonmel, the stored Rule 8 ranking, Mallow).
+**Order and reset:** the rehearsal values were in the Sheet for tests 2, 1b, 3, 4 and 5, which concern towns or data they do not affect; 1a ran with them cleared. Afterwards both cells were cleared, and the live Sheet was checked identical to the starter values.
 
 ## Errors found and fixed
 
@@ -45,6 +39,11 @@ Screenshots are in `test/` (file names in the last column).
 | R1/R2 retest | 08:52 | 8,255 | 998 | $0.0265 | $0.0265 ✅ |
 | **Average of tests 1–5** | | **≈ 8,200** | **≈ 620** | **$0.0254** | **$0.0227** (after fix R2) |
 
-- **Cost per answer (measured):** **≈ $0.025** before fix R2, **≈ $0.023** after it. Sonnet 5.5 is $2 / $10 per million input / output tokens (Anthropic pricing page, checked 26 Nov 2026). The estimate before testing was ≈ $0.02. Input was about twice the estimate (≈ 8,200 tokens, not 4,000), because each question sends the full computed plan with its sources. Output was lower than estimated.
-- **Questions sent while building and testing:** **15 questions**, total **$0.400**, average **$0.0267** per answer (page counter, `cost.png`). That covers building checks, the six tests and the retest, and most were before fix R2.
-- **At 1,000 questions a month:** ≈ $23 (after R2), ≈ $25 (before).
+| Measure | Value |
+|---|---|
+| Questions sent while building and testing | **15**, total **$0.400** (page counter, `cost.png`) |
+| Cost per answer, measured | **$0.025** before fix R2, **$0.023** after (about 8,200 input and 620 output tokens) |
+| Estimate before testing | $0.02 (Anthropic pricing page, 26 Nov 2026: $2 / $10 per million input / output tokens) |
+| At 1,000 questions a month | about $23 after fix R2 |
+
+Input was twice the estimate because each question sends the whole computed plan with its sources.
