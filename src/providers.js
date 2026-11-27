@@ -81,7 +81,9 @@ const anthropic = {
   async call({ key, model, system, messages }) {
     const d = await http("https://api.anthropic.com/v1/messages", {
       method: "POST", headers: this.headers(key),
-      body: JSON.stringify({ model, max_tokens: MAX_TOKENS, system, cache_control: { type: "ephemeral" },
+      // No prompt caching: every question carries new live data, so a cached prompt is never reused and the
+      // cache write only adds 25% to input cost (seen in Task 3: ~$0.004 extra per answer).
+      body: JSON.stringify({ model, max_tokens: MAX_TOKENS, system,
         output_config: { effort: EFFORT }, tools: [{ name: TOOL_NAME, description: TOOL_DESC, strict: true, input_schema: TOOL_SCHEMA }], messages }),
     }, this.label);
     const u = d.usage || {};

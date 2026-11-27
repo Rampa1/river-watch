@@ -177,7 +177,7 @@ export function buildPlan({ rows, history, forecasts, warnings, now = new Date()
     }
   }
   for (const t of towns) {
-    if (t.level === "Standby") t.action = "Standby: staff on call confirmed, pumps checked, sandbags staged";
+    if (t.level === "Standby") t.action = `Standby: ${t.resources.staff_on_call} staff on call confirmed, ${t.resources.pumps} pumps checked, ${t.resources.sandbags} sandbags staged`;
     if (t.level === "Normal") t.action = "No action";
     if (t.level == null) t.action = "Unknown: check sources";
     if (t.action?.startsWith("Standby") && t.level !== "Standby")

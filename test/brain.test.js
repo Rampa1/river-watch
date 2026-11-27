@@ -31,6 +31,7 @@ test("Anthropic: request shape, tool loop, thinking blocks returned unchanged", 
   assert.ok(!("anthropic-beta" in h)); assert.ok(!("fallbacks" in first.body), "no fallback to another model");
   for (const k of ["temperature", "top_p", "top_k", "thinking"]) assert.ok(!(k in first.body), `${k} must not be sent`);
   assert.equal(first.body.max_tokens, 4000); assert.equal(first.body.tools[0].strict, true);
+  assert.ok(!("cache_control" in first.body), "no prompt caching: live data changes every question");
   assert.deepEqual(second.body.messages[1].content, replies[0].content);
   assert.equal(second.body.messages[2].content[0].tool_use_id, "tu1");
   assert.deepEqual(r.usage, { input: 6500, output: 600, cacheRead: 1000, cacheWrite: 0 });

@@ -1,0 +1,44 @@
+### BEFORE
+Read at 27 Nov 2026 06:29 | Sheet rows 8 | Met Éireann warnings in feed: 0
+Clonmel             Normal   peak   29.83 | P95   77.7 P99  127.7 |  -76.6% vs P99 | barrier set yes | counties Tipperary
+                    forecast days: 2026-11-27 29.13, 2026-11-28 29.83, 2026-11-29 29.34
+Fermoy              Normal   peak   29.90 | P95   77.2 P99  127.8 |  -76.6% vs P99 | barrier set yes | counties Cork
+                    forecast days: 2026-11-27 29.9, 2026-11-28 29.9, 2026-11-29 28.58
+Mallow              Normal   peak   16.14 | P95   44.6 P99   71.3 |  -77.4% vs P99 | barrier set yes | counties Cork
+                    forecast days: 2026-11-27 15.83, 2026-11-28 16.14, 2026-11-29 15.37
+Bandon              Normal   peak    6.38 | P95   22.0 P99   38.7 |  -83.5% vs P99 | barrier set NO | counties Cork
+                    forecast days: 2026-11-27 5.67, 2026-11-28 6.38, 2026-11-29 6.31
+Enniscorthy         Normal   peak   12.27 | P95   38.7 P99   69.8 |  -82.4% vs P99 | barrier set yes | counties Wexford
+                    forecast days: 2026-11-27 11.47, 2026-11-28 12.27, 2026-11-29 12.27
+Ennis               Normal   peak   21.65 | P95   31.1 P99   45.4 |  -52.3% vs P99 | barrier set yes | counties Clare
+                    forecast days: 2026-11-27 21.65, 2026-11-28 20.98, 2026-11-29 18.68
+Athlone             Normal   peak   45.45 | P95  142.4 P99  186.7 |  -75.7% vs P99 | barrier set yes | counties Roscommon+Westmeath
+                    forecast days: 2026-11-27 44.81, 2026-11-28 45.03, 2026-11-29 45.45
+Carrick-on-Shannon  Normal   peak   34.08 | P95   62.2 P99   88.8 |  -61.6% vs P99 | barrier set yes | counties Leitrim+Roscommon
+                    forecast days: 2026-11-27 33.04, 2026-11-28 34.08, 2026-11-29 31.96
+
+Barriers towns ranked for crews (% above P99, tie: higher peak):
+Crew areas: {'Clonmel': ['Clonmel', 'Fermoy', 'Enniscorthy'], 'Mallow': ['Mallow', 'Fermoy', 'Bandon'], 'Athlone': ['Athlone', 'Carrick-on-Shannon', 'Ennis']} | each crew max 2 towns | check notes for crew restrictions (Mallow crew: Mallow only)
+
+### AFTER (preview Fermoy=140, Athlone=orange)
+Read at 27 Nov 2026 06:29 | Sheet rows 8 | Met Éireann warnings in feed: 0
+Clonmel             Normal   peak   29.83 | P95   77.7 P99  127.7 |  -76.6% vs P99 | barrier set yes | counties Tipperary
+                    forecast days: 2026-11-27 29.13, 2026-11-28 29.83, 2026-11-29 29.34
+Fermoy              Barriers peak  140.00 | P95   77.2 P99  127.8 |   +9.5% vs P99 | barrier set yes | counties Cork (REHEARSAL flow 140)
+                    forecast days: 2026-11-27 29.9, 2026-11-28 29.9, 2026-11-29 28.58
+Mallow              Normal   peak   16.14 | P95   44.6 P99   71.3 |  -77.4% vs P99 | barrier set yes | counties Cork
+                    forecast days: 2026-11-27 15.83, 2026-11-28 16.14, 2026-11-29 15.37
+Bandon              Normal   peak    6.38 | P95   22.0 P99   38.7 |  -83.5% vs P99 | barrier set NO | counties Cork
+                    forecast days: 2026-11-27 5.67, 2026-11-28 6.38, 2026-11-29 6.31
+Enniscorthy         Normal   peak   12.27 | P95   38.7 P99   69.8 |  -82.4% vs P99 | barrier set yes | counties Wexford
+                    forecast days: 2026-11-27 11.47, 2026-11-28 12.27, 2026-11-29 12.27
+Ennis               Normal   peak   21.65 | P95   31.1 P99   45.4 |  -52.3% vs P99 | barrier set yes | counties Clare
+                    forecast days: 2026-11-27 21.65, 2026-11-28 20.98, 2026-11-29 18.68
+Athlone             Standby  peak   45.45 | P95  142.4 P99  186.7 |  -75.7% vs P99 | barrier set yes | counties Roscommon+Westmeath (+1: REHEARSAL orange warning)
+                    forecast days: 2026-11-27 44.81, 2026-11-28 45.03, 2026-11-29 45.45
+Carrick-on-Shannon  Normal   peak   34.08 | P95   62.2 P99   88.8 |  -61.6% vs P99 | barrier set yes | counties Leitrim+Roscommon
+                    forecast days: 2026-11-27 33.04, 2026-11-28 34.08, 2026-11-29 31.96
+
+Barriers towns ranked for crews (% above P99, tie: higher peak):
+  Fermoy: +9.5%  barrier set: yes
+Crew areas: {'Clonmel': ['Clonmel', 'Fermoy', 'Enniscorthy'], 'Mallow': ['Mallow', 'Fermoy', 'Bandon'], 'Athlone': ['Athlone', 'Carrick-on-Shannon', 'Ennis']} | each crew max 2 towns | check notes for crew restrictions (Mallow crew: Mallow only)

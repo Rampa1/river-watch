@@ -47,6 +47,7 @@ test("Rule 5: warning_override orange raises one level and is labelled rehearsal
   const p = plan({ rows: set(rows(), "Athlone", { warning_override: "Orange" }) });
   const a = town(p, "Athlone");
   assert.equal(a.flowLevel, "Normal"); assert.equal(a.level, "Standby");
+  assert.equal(a.action, "Standby: 6 staff on call confirmed, 5 pumps checked, 2500 sandbags staged");
   assert.ok(a.rehearsal.some((r) => /warning_override/.test(r)));
 });
 
